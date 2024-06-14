@@ -7,9 +7,38 @@ export mult_2schub, lrc, mult_schub, expand_schub
 
 #########
 
+"""
+    mult_2schub( uu, vv, rnk, R )
 
-# multiply two schubert classes, default is non-equivariant
-function mult_2schub( uu::Vector{Int}, vv::Vector{Int}, rnk::Int=maximum([length(uu),length(vv)]), R=xy_ring(rnk-1,0)[1] )
+Multiply two Schubert classes
+
+## Arguments
+- `uu::Vector{Int}`: a permutation
+- `uu::Vector{Int}`: a permutation
+- `rnk::Int`: an integer specifying the ambient flag variety, Fl(rnk).  Defaults to the larger of the lengths of uu and vv.
+- `R::DoublePolyRing`: the ambient polynomial ring, with underlying ring `R.ring` and variables `R.x_vars` and `R.y_vars`.  Defaults to a single-variable ring in rnk-1 x variables.
+
+## Returns
+`SchubertSum`: a sum of Schubert classes
+
+## Examples
+```julia-repl
+# Choose two permutations
+julia> u = [2,1];
+julia> v = [1,3,2];
+
+# Compute the (non-equivariant) product
+julia> mult_2schub( u, v, 3 )
+S[3, 1, 2] + S[2, 3, 1]
+
+# Define a double-variable DoublePolyRing
+julia> R = xy_ring(3,3)[1];
+
+julia> mult_2schub( [2,3,1], [3,1,2], 4, R )
+(y1 - y3)*S[3, 2, 1] + S[4, 2, 1, 3]
+```
+"""
+function mult_2schub( uu::Vector{Int}, vv::Vector{Int}, rnk::Int=maximum([length(uu),length(vv)]), R=xy_ring(rnk-1)[1] )
 
   len(uu)>len(vv) && return mult_2schub( vv, uu, rnk, R )
 
@@ -18,6 +47,8 @@ function mult_2schub( uu::Vector{Int}, vv::Vector{Int}, rnk::Int=maximum([length
   return mult_schub( f, vv, rnk, R )
 
 end
+
+
 
 # get the schubert structure constant, default non-equivariant
 function lrc( uu::Vector{Int}, vv::Vector{Int}, ww::Vector{Int}, rnk::Int=maximum([length(uu),length(vv),length(ww)]), R=xy_ring(rnk-1)[1] )
