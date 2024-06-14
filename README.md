@@ -2,11 +2,9 @@
 
 *A Julia package for Schubert calculus and related combinatorics*
 
-This package provides functions for computing [Schubert polynomials](https://en.wikipedia.org/wiki/Schubert_polynomial) via *bumpless pipe dreams* and *drift polynomials*.  The former ("BPDs") are gadgets which enumerate terms in a Schubert polynomial, developed by [Lam-Lee-Shimozono](https://arxiv.org/abs/1806.11233).  The latter are generalizations of Schur polynomials that William Fulton and I have found useful.
-
-
-
 [![Build Status](https://github.com/pseudoeffective/SchubertPolynomials.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/pseudoeffective/SchubertPolynomials.jl/actions/workflows/CI.yml?query=branch%3Amain)
+
+This package provides functions for computing [Schubert polynomials](https://en.wikipedia.org/wiki/Schubert_polynomial) via *bumpless pipe dreams* and *drift polynomials*.  The former ("BPDs") are gadgets which enumerate terms in a Schubert polynomial, developed by [Lam-Lee-Shimozono](https://arxiv.org/abs/1806.11233).  The latter are generalizations of Schur polynomials that William Fulton and I have found useful.  The package also uses "standard" ways of computing (divided difference operators, transition trees).
 
 To use the package, first install Julia.  If you are new to this language, I recommend Ulrich Thiel's page on [JuLie](https://ulthiel.github.io/JuLie.jl/dev/), which in addition to providing software, has a nice introduction for the algebraically-minded mathematician.
 
