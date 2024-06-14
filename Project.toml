@@ -1,0 +1,20 @@
+name = "SchubertPolynomials"
+uuid = "ca6918c7-c46a-4663-8c75-d24c3a15490e"
+authors = ["Dave Anderson"]
+version = "1.0.0-DEV"
+
+[deps]
+AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Memoization = "6fafb56a-5788-4b4e-91ca-c0cea6611c73"
+Nemo = "2edaba10-b0f1-5616-af89-8c11ac63239a"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+
+[compat]
+julia = "1.6.7"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
