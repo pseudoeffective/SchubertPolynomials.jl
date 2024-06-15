@@ -2,7 +2,12 @@
 # David Anderson, February 2024.
 
 
-export Drift, drift_class, nw_reset, se_reset, markconfig, random_drift, partition2drift, bpd2drift
+export Drift, drift_class, drift_poly, nw_reset, se_reset, markconfig, random_drift, partition2drift, bpd2drift
+
+
+# TO DO: review function drift2bin(d::Drift, R::DoublePolyRing) which acts like bpd2bin, records a product of binomials x[i]+y[j]
+# TO DO: review function drift_poly(d::Drift, R::DoublePolyRing) which produces the drift polynomial from the iterator
+# Check: drift_poly agrees with dc2sd
 
 #########
 
@@ -225,7 +230,6 @@ end
 
 
 
-
 function nw_reset(dc)
 # returns flat diagram in drift class of dc
    local n=size(dc.m)[1]
@@ -260,6 +264,61 @@ function se_reset(dc)
    end
 
    return(dc)   
+
+end
+
+
+
+#####
+# Drift polynomials
+#####
+
+function drift2bin( d::Drift, R::DoublePolyRing=xy_ring( size(d.m)[1]-1, size(d.m)[2]-1 )[1] )
+# product of binomials for d
+# requires DoublePolyRing
+# can get single polyn by using no y_vars
+  local n=size(d.m)[1]-1
+  bin = R.ring(1)
+
+  x = R.x_vars
+  y = R.y_vars
+
+  local aa=length(x)
+  local bb=length(y)
+
+  for i=1:n
+    for j=1:n
+
+      if d.m[i,j]==0 || d.m[i,j]==7 || isa(d.m[i,j],Tuple)
+        p=R.ring(0)
+        if i<=aa
+          p=p+x[i]
+        end
+        if j<=bb
+          p=p+y[j]
+        end
+        bin = bin*p
+      end
+
+    end
+  end
+
+  return bin
+
+end
+
+
+function drift_poly( d::Drift, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]  )
+# compute drift pol by iterator
+  dc=drift_class(d)
+
+  pol=R.ring(0)
+
+  for dd in dc
+    pol = pol+drift2bin(dd,R)
+  end
+
+  return(pol)
 
 end
 
@@ -381,7 +440,7 @@ function markbox( dc::Drift, i, j )
     local k1=markbox( dc, i, j+1 )[1]
     local k2=0
 #    while i+k2+1<n && j+k2<n && dr[i+k2+1,j+k2+1]==8
-    while k2<k1
+    while k2<k1 && i+k2+1<n && j+k2<n
       if dr[i+k2+2,j+k2+1]==0 || isa( dr[i+k2+2,j+k2+1], Tuple )
         return (k2,true)
       end
@@ -397,7 +456,7 @@ function markbox( dc::Drift, i, j )
     local k1=markbox( dc, i+1, j )[1]
     local k2=0
 #    while i+k2<n && j+k2+1<n && dr[i+k2+1,j+k2+1]==8
-    while k2<k1
+    while k2<k1 && i+k2<n && j+k2+1<n
       if dr[i+k2+1,j+k2+2]==0 || isa( dr[i+k2+1,j+k2+2], Tuple )
         return (k2,true)
       end
@@ -507,7 +566,7 @@ end
 function random_drift( n )
 # random drift config of size n
 
-  local possible_entries = [0, 1, 8, 6, 7]
+  local possible_entries = Int8[0, 1, 8, 6, 7]
 
   return Drift(rand( possible_entries, n,n ))
 
@@ -589,16 +648,16 @@ function tabcomps(bpd)
         local rr=Vector{Int}([])
 
         local s=0
-        while bpd[i+s,j]==0
+        while i+s<=n && bpd[i+s,j]==0
 
           local k=0
-          while bpd[i+s,j+k]==0  # find SE boxes
+          while j+k<=n && bpd[i+s,j+k]==0  # find SE boxes
             k +=1
           end          
           push!(la,k)
 
           local el=1
-            while bpd[i+s+el,j+k-1+el]=="%" || bpd[i+s+el,j+k-1+el]=="|"  # || bpd[i+s+el,j+k-1+el]=="-" 
+            while i+s+el<=n && j+k-1+el<=n && bpd[i+s+el,j+k-1+el]=="%" || bpd[i+s+el,j+k-1+el]=="|"  # || bpd[i+s+el,j+k-1+el]=="-" 
               el +=1
             end
           push!(rr,el-1)

@@ -161,5 +161,5 @@ julia> draw_bpd( bpds[1], saveto="bpd.png" )
 
 
 
-*Thanks to [Anders Buch](https://sites.math.rutgers.edu/~asbuch/) for convincing me to try out Julia.*
+*Thanks to [Anders Buch](https://sites.math.rutgers.edu/~asbuch/) for convincing me to try out Julia.  Some of the functions in this package are based on his Maple code for multiplying Schubert polynomials.*
 

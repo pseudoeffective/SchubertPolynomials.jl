@@ -47,7 +47,7 @@ export
 
      ZZ, ZZMPolyRing, ZZMPolyRingElem, 
 
-     base_ring, gen, gens, nvars, coefficients, evaluate
+     base_ring, polynomial_ring, gen, gens, nvars, vars, coefficients, evaluate
 
 
 
