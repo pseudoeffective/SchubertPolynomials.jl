@@ -4,6 +4,8 @@
 
 export schub_poly, groth_poly, nschub, ngroth, dc2sd
 
+# TO DO: clarify the logic and clean up tableau_components
+
 #############
 
 """
@@ -318,6 +320,8 @@ function schub_drifts( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(len
 end
 
 
+
+
 #@memoize 
 function schub_trans( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
 # compute schubert pol by transition formula
@@ -589,10 +593,10 @@ function tableau_components(dc)
         local rr=Vector{Int}([])
 
         local s=0
-        while isa( dc.m[i+s,j], Tuple )
+        while i+s<=n && isa( dc.m[i+s,j], Tuple )
 
           local k=0
-          while isa( dc.m[i+s,j+k], Tuple )  # find SE boxes
+          while j+k<=n && isa( dc.m[i+s,j+k], Tuple )  # find SE boxes
             k +=1
           end          
           push!(la,k)
@@ -706,3 +710,24 @@ function vex_det( la, ff )
   return det(A)
 
 end
+
+
+#=
+# temporary alternative, not used
+function schub_2drifts( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+# compute schubert pol by drift class formula
+
+  fbpds = flat_bpds(w)
+
+  pol = R.ring(0)
+
+  for b in fbpds
+    d=bpd2drift(b)
+    pol = pol+drift_poly(d,R)
+  end
+
+  return pol
+
+end
+
+=#

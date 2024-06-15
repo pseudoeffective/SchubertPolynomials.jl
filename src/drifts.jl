@@ -7,7 +7,7 @@ export Drift, drift_class, drift_poly, nw_reset, se_reset, markconfig, random_dr
 
 # TO DO: review function drift2bin(d::Drift, R::DoublePolyRing) which acts like bpd2bin, records a product of binomials x[i]+y[j]
 # TO DO: review function drift_poly(d::Drift, R::DoublePolyRing) which produces the drift polynomial from the iterator
-# Check: drift_poly agrees with dc2sd
+# TO DO: clarify the logic in markbox
 
 #########
 
@@ -617,13 +617,9 @@ end
 
 
 
-################
-# IN DEVELOPMENT
-################
 
-
-
-# possibly move this one to bpd-schub
+#=
+# not used
 
 function tabcomps(bpd)
 # return labelled tableaux for a flat bpd
@@ -696,3 +692,4 @@ function tabcomps(bpd)
   return lyds
 end
 
+=#
