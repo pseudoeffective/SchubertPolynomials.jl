@@ -36,8 +36,9 @@ la = [4,4,2,1]
 ff = [[3,4,4,5],[3,4,5,6],[4,5],[6]]
 R = xy_ring(6)[1]
 p = schur_poly(la,ff,R);
+tt = ssyt(la,ff);
 
 @test sum(coefficients(p))==3693
-@test length(ssyt(la,ff))==3693
+@test length(tt)==3693
 
 end

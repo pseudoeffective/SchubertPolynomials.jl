@@ -185,7 +185,7 @@ x1^2*x2 + x1^2*x3 + x1*x2^2 + 2*x1*x2*x3 + x1*x3^2 + x2^2*x3 + x2*x3^2
 
 ```
 """
-function schur_poly( la, ff::Union{Vector{Int},Vector{Vector{Int}}}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
+function schur_poly( la, ff::Vector{Vector{Int}}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
   if length(la)==0
     return RR.ring(1)
   end
@@ -210,14 +210,21 @@ function schur_poly( la, ff::Union{Vector{Int},Vector{Vector{Int}}}, RR::DoubleP
 
 end
 
-
-
-function schur_poly( la, ff::Int, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = [], xoffset=0, yoffset=0, rowmin=false )
+function schur_poly( la, ff::Vector{Int}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
   if length(la)==0
     return RR.ring(1)
   end
 
-  schur_poly( la, Vector{Int}(fill(ff,length(la))), RR; mu = mu, xoffset=xoffset, yoffset=yoffset, rowmin=rowmin )
+  return schur_poly( la, Vector{Vector{Int}}([fill(ff[i],la[i]) for i=1:length(la)]), RR; mu = mu, xoffset=xoffset, yoffset=yoffset, rowmin=rowmin )
+
+end
+
+function schur_poly( la, ff::Int, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
+  if length(la)==0
+    return RR.ring(1)
+  end
+
+  return schur_poly( la, Vector{Int}(fill(ff,length(la))), RR; mu = mu, xoffset=xoffset, yoffset=yoffset, rowmin=rowmin )
 
 
 end
@@ -249,7 +256,7 @@ julia> tabs = ssyt([3, 2], 3)
 # Generate SSYTs for the shape [3, 2, 1]/[1] and row-minimal condition
 julia> skewtabs = ssyt([3, 2, 1], [3, 3, 3], mu=[1], rowmin=true)
 """
-function ssyt( lambda::Vector{Int}, ff::Vector{Vector{Int}}; mu::Vector{Int} = fill(0, length(la)), rowmin::Bool=false)
+function ssyt( lambda::Vector{Int}, ff::Vector{Vector{Int}}; mu::Vector{Int} = fill(0, length(lambda)), rowmin::Bool=false)
 
   len = length(lambda)
   tab = sstab(lambda, mu, rowmin=rowmin).t
@@ -306,9 +313,17 @@ function ssyt( lambda::Vector{Int}, ff::Vector{Vector{Int}}; mu::Vector{Int} = f
       if i == 1
         tab[1][j] = tab[1][j - 1]  #if i==1 then j!=1 by initialization
       elseif j == 1
-        tab[i][1] = tab[i - 1][1] + 1 #likewise if j==1 then i!=1
+        if rowmin  # ensure tab entry is at least row index
+           tab[i][1] = max(i,tab[i - 1][1] + 1) #likewise if j==1 then i!=1
+        else
+           tab[i][1] = tab[i - 1][1] + 1 #likewise if j==1 then i!=1
+        end
       else
-        tab[i][j] = max(tab[i][j - 1], tab[i - 1][j] + 1)
+        if rowmin  # ensure tab entry is at least row index
+           tab[i][j] = max(tab[i][j - 1], tab[i - 1][j] + 1, i) #likewise if j==1 then i!=1
+        else
+           tab[i][j] = max(tab[i][j - 1], tab[i - 1][j] + 1) #likewise if j==1 then i!=1
+        end
       end
       if j < lambda[i]
         j += 1
@@ -326,26 +341,26 @@ end
 
 
 ###
-function ssyt( la, ff::Vector{Int}; mu = fill(0, length(la)), rowmin=false)
+function ssyt( lambda, ff::Vector{Int}; mu = fill(0, length(lambda)), rowmin=false)
 # case of flagged tableaux
   bd = Vector{Vector{Int}}([])
-  for i=1:length(la)
-    push!( bd, fill( ff[i], la[i] ) )
+  for i=1:length(lambda)
+    push!( bd, fill( ff[i], lambda[i] ) )
   end
 
-  ssyt( la, bd; mu=mu, rowmin=rowmin )
+  ssyt( lambda, bd; mu=mu, rowmin=rowmin )
 end
 
 
 ###
-function ssyt( la, ff::Int=length(la); mu = fill(0, length(la)), rowmin=false)
+function ssyt( lambda, ff::Int=length(la); mu = fill(0, length(lambda)), rowmin=false)
 # uniformly bounded, default to number of rows of lambda
   bd = Vector{Vector{Int}}([])
-  for i=1:length(la)
-    push!( bd, fill( ff, la[i] ) )
+  for i=1:length(lambda)
+    push!( bd, fill( ff, lambda[i] ) )
   end
 
-  ssyt( la, bd; mu=mu, rowmin=rowmin )
+  ssyt( lambda, bd; mu=mu, rowmin=rowmin )
 end
 
 
@@ -423,9 +438,17 @@ function schur_polynomial1_combinat(lambda::Vector{Int}, ff::Vector{Vector{Int}}
       if i == 1
         tab[1][j] = tab[1][j - 1]  #if i==1 then j!=1 by initialization
       elseif j == 1
-        tab[i][1] = tab[i - 1][1] + 1 #likewise if j==1 then i!=1
+        if rowmin
+           tab[i][1] = max(i,tab[i - 1][1] + 1) #likewise if j==1 then i!=1
+        else
+           tab[i][1] = tab[i - 1][1] + 1 #likewise if j==1 then i!=1
+        end
       else
-        tab[i][j] = max(tab[i][j - 1], tab[i - 1][j] + 1)
+        if rowmin
+           tab[i][j] = max(tab[i][j - 1], tab[i - 1][j] + 1, i) #likewise if j==1 then i!=1
+        else
+           tab[i][j] = max(tab[i][j - 1], tab[i - 1][j] + 1) #likewise if j==1 then i!=1
+        end
       end
       if j < lambda[i]
         j += 1
