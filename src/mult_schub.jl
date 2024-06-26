@@ -5,6 +5,9 @@
 export mult_2schub, lrc, mult_schub, expand_schub
 
 
+# TO DO: in expand_schub, make default the parent ring of the input polynomial ring f
+
+
 #########
 
 """

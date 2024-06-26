@@ -17,7 +17,7 @@ module SchubertPolynomials
 # AbstractAlgebra
 import AbstractAlgebra:
 
-     base_ring, gen, gens, parent_type, nvars, polynomial_ring, MPolyBuildCtx, finish
+     base_ring, gen, gens, parent_type, nvars, polynomial_ring, MPolyBuildCtx, push_term!, finish
 
 # Nemo
 import Nemo:
@@ -45,7 +45,7 @@ import Plots:
 
 export
 
-     ZZ, ZZMPolyRing, ZZMPolyRingElem, 
+     ZZ, ZZMPolyRing, ZZMPolyRingElem
 
      base_ring, polynomial_ring, gen, gens, nvars, vars, coefficients, evaluate
 
