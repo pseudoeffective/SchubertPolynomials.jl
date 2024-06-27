@@ -92,7 +92,7 @@ function schub_poly(w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), 0 )[1]; me
     return schub_trans(w,R)
   end
 
-  if length(R.y_vars)>0 || len(w)<.2*length(w)^2
+  if length(R.y_vars)>0 || len(w)<.3*length(w)^2
     return schub_trans(w,R)
   end
 

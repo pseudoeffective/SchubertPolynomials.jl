@@ -371,7 +371,7 @@ end
 
 function schur_polynomial1_combinat(lambda::Vector{Int}, ff::Vector{Vector{Int}}, R::DoublePolyRing=xy_ring(max(max(ff...)...),0)[1]; mu::Vector{Int}=Int[], xoffset::Int=0, rowmin::Bool=false)
   if isempty(lambda)
-    return one(R)
+    return one(R.ring)
   end
 
   S = base_ring(R.ring)
