@@ -44,11 +44,20 @@ julia> nschub(w)
 4424420
 ```
 
+One can compute back stable Schubert polynomials, in the "dominant" basis `s[lambda]`, indexed by partitions:
+```julia
+julia> R = xy_ring(4,4)[1];
+
+julia> back_schub_poly( [1,3,4,2], R )
+(x2*x3 + x2*y2 + x3*y2 + y2^2)*ss[] + ss[1, 1] + (x3 + y2)*ss[1]
+```
 For more info, see the help files:
 ```julia
 julia> ?schub_poly
 
 julia> ?groth_poly
+
+julia> ?back_schub_poly
 ```
 
 
