@@ -18,9 +18,17 @@ Return the back stable Schubert polynomial for the permutation `w`
 
 
 ## Returns
-`ZZMPolyRingElem`: the Schubert polynomial in the ring R
+`DominantSum`: the back stable Schubert polynomial, written in the basis of dominant polynomials, with coefficients in R
 
+## Example
+
+```julia-repl
+julia> R = xy_ring(4,4)[1];
+
+julia> back_schub_poly( [1,3,4,2], R )
+(x2*x3 + x2*y2 + x3*y2 + y2^2)*ss[] + ss[1, 1] + (x3 + y2)*ss[1]
 ```
+Here `ss[lambda]` stands for the dominant polynomial corresponding to a partition `lambda`.
 """
 function back_schub_poly(w, R::DoublePolyRing=xy_ring( max(length(w)-1,1))[1] )
 

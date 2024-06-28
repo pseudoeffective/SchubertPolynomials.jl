@@ -51,6 +51,9 @@ julia> ?schub_poly
 julia> ?groth_poly
 ```
 
+
+
+
 There are also functions for generating Young tableaux and computing (double,flagged) Schur polynomials.
 ```julia
 julia> la = [2,1]; ff=2;
