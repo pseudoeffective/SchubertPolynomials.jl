@@ -1,10 +1,6 @@
 # Constructing semistandard tableaux and Schur polynomials
-# David Anderson, February 2024.
-# This version uses Memoization
-
-# TO DO -- harmonize schur_poly and ssyt functions with Oscar versions
-# at least when there are no y variables
-
+# David Anderson, June 2024.
+# This version based on OSCAR
 
 
 export Tableau, schur_poly, ssyt
@@ -13,49 +9,6 @@ export Tableau, schur_poly, ssyt
 struct Tableau
   t::Vector{Vector{Int}}
 end
-
-
-
-function sstab( la::Vector{Int}, mu=[]; rowmin=false )
-# make the superstandard tableau from partition shape la(/mu)
-  tab=[]
-
-  if rowmin
-    for i in 1:length(la)
-      push!(tab, fill(i, la[i]) )
-    end
-
-    for i=1:length(mu)
-      for j=1:mu[i]
-        tab[i][j]=0
-      end
-    end
-    return Tableau(tab)
-  end  
-
-
-  for i in 1:length(la)
-    tr=[]
-    if i<=length(mu)
-      push!(tr,fill(0,mu[i])...)
-      j=mu[i]+1
-    else
-      j=1
-    end
-    while j<=la[i]
-      k=1
-      while k<i && tab[i-k][j]>0
-        k+=1
-      end
-      push!(tr,k)
-    j+=1
-    end
-    push!(tab,tr)
-  end
-
-  return Tableau(tab)
-end
-
 
 
 # extract the (skew) shape of a tableau
@@ -98,6 +51,47 @@ end
 
 # overload identity for Tableau type
 Base.:(==)(tab1::Tableau,tab2::Tableau) = tab1.t==tab2.t
+
+
+function sstab( la::Vector{Int}, mu=[]; rowmin=false )
+# make the superstandard tableau from partition shape la(/mu)
+  tab=[]
+
+  if rowmin
+    for i in 1:length(la)
+      push!(tab, fill(i, la[i]) )
+    end
+
+    for i=1:length(mu)
+      for j=1:mu[i]
+        tab[i][j]=0
+      end
+    end
+    return Tableau(tab)
+  end  
+
+
+  for i in 1:length(la)
+    tr=[]
+    if i<=length(mu)
+      push!(tr,fill(0,mu[i])...)
+      j=mu[i]+1
+    else
+      j=1
+    end
+    while j<=la[i]
+      k=1
+      while k<i && tab[i-k][j]>0
+        k+=1
+      end
+      push!(tr,k)
+    j+=1
+    end
+    push!(tab,tr)
+  end
+
+  return Tableau(tab)
+end
 
 
 # return the product of binomials
@@ -198,18 +192,11 @@ function schur_poly( la, ff::Vector{Vector{Int}}, RR::DoublePolyRing=xy_ring( le
 
   pol = ssyt2pol( tbs, RR; xoffset=xoffset, yoffset=yoffset )
 
-#=
-  pol = RR.ring(0)
-
-  for tab in tbs
-    pol = pol + tab2bin( tab, RR; xoffset=xoffset, yoffset=yoffset )
-  end
-=#
-
   return pol
 
 end
 
+###
 function schur_poly( la, ff::Vector{Int}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
   if length(la)==0
     return RR.ring(1)
@@ -219,6 +206,7 @@ function schur_poly( la, ff::Vector{Int}, RR::DoublePolyRing=xy_ring( length(la)
 
 end
 
+###
 function schur_poly( la, ff::Int, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
   if length(la)==0
     return RR.ring(1)
@@ -336,7 +324,6 @@ function ssyt( lambda::Vector{Int}, ff::Vector{Vector{Int}}; mu::Vector{Int} = f
     n = lambda[len]
   end #while true
 
-
 end
 
 
@@ -367,7 +354,7 @@ end
 ################
 
 
-# this function does much better for single polynomials
+# faster polynomial constructor for single polynomials, based on OSCAR version
 
 function schur_polynomial1_combinat(lambda::Vector{Int}, ff::Vector{Vector{Int}}, R::DoublePolyRing=xy_ring(max(max(ff...)...),0)[1]; mu::Vector{Int}=Int[], xoffset::Int=0, rowmin::Bool=false)
   if isempty(lambda)
@@ -462,141 +449,3 @@ function schur_polynomial1_combinat(lambda::Vector{Int}, ff::Vector{Vector{Int}}
   end #while true
 end
 
-
-
-####### not used
-#=
-@memoize function ssyt_old(la, bd::Vector{Vector{Int}}; mu = fill(0, length(la)), rowmin=false)
-    len = length(la)
-    mmu = copy(mu)
-
-    ns = collect( 1:maximum(vcat(bd...)) )
-    
-    while length(mmu) < len
-        push!(mmu, 0)
-    end
-    
-    if length(mmu) > len || mmu[end] > la[end]
-        println("error: mu not contained in lambda")
-        return nothing
-    end
-    
-    tabs = Vector{Tableau}([])
-    
-    if len == 0
-        return tabs
-    end
-    
-    if len == 1
-
-        if la[1] == mmu[1]
-            push!(tabs, Tableau( [fill(0, mmu[1])] ) )
-        end
-
-        if la[1] == mmu[1] + 1
-            for i in 1:length(ns)
-                if ns[i] <= bd[1][la[1]]
-                    push!(tabs, Tableau( [append!( copy(fill(0, mmu[1])), ns[i])] ) )
-                end
-            end
-            return tabs
-        end
-
-        if la[1] > mmu[1] + 1
-            tabs1 = ssyt([la[1] - 1], bd, mu=mmu)
-            for tt in tabs1
-                for k in 1:length(ns)
-                    if ns[k] <= bd[1][la[1]]
-                        t2=add_tabi(tt,1,ns[k])
-                        if t2!=nothing
-                          push!(tabs, t2 )
-                        end
-                    end
-                end
-            end
-        end
-
-        return tabs
-    end
-    
-    if len > 1
-        la1 = la[1:len-1]
-        mu1 = mmu[1:len-1]
-        
-        tabs1 = ssyt(la1, bd, mu=mu1, rowmin=rowmin)
-        
-        if mmu[end] > 0
-            tabs2 = Vector{Tableau}([])
-            for tt in tabs1
-                push!(tabs2, Tableau( vcat( tt.t, [fill(0, mmu[len])] ) ) )
-            end
-            tabs1 = tabs2
-        end
-        
-        for i in 1:(la[len] - mmu[len])
-            tabs2 = Vector{Tableau}([])
-            for tt in tabs1
-                for k in 1:length(ns)
-                    if ns[k] <= bd[len][mmu[len]+i] && (!rowmin || ns[k]>=len )
-                        t2 = add_tabi(tt, len, ns[k])
-                        if t2!=nothing
-                          push!(tabs2, t2)
-                        end
-                    end
-                end
-            end
-            tabs1 = tabs2
-        end
-        tabs = tabs1
-    end
-        
-    return tabs
-end
-
-
-################
-# Build tableaux as paths in Young lattice, with memoization
-
-
-###
-# add 'a' to row k of tab, return nothing if fails
-function add_tabi(tab::Tableau, k, a)
-    len = length(tab.t)
-
-    if k > len + 1
-        return nothing
-    end
-
-    if k == 1
-        if a >= last(tab.t[1])
-            temp = [[tab.t[1]; a], tab.t[2:end]...]
-            return Tableau(temp)
-        else
-            return nothing
-        end
-    end
-
-    if k > 1 && k < len + 1
-        lam = length(tab.t[k])
-        if lam < length(tab.t[k-1]) && 
-           a >= last(tab.t[k]) && 
-           a > tab.t[k-1][lam+1]
-            temp = [tab.t[1:k-1]..., [tab.t[k]; a], tab.t[k+1:end]...]
-            return Tableau(temp)
-        else
-            return nothing
-        end
-    end
-
-    if k == len + 1
-        if a > first(tab.t[len])
-            temp = [tab.t..., [a]]
-            return Tableau(temp)
-        else
-            return nothing
-        end
-    end
-end
-
-
-=#

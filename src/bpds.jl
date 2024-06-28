@@ -188,6 +188,33 @@ function Rothe(w)
 end
 
 
+# extract the partition in NW corner of a BPD
+function dominant_part(b::BPD)
+
+  bm = b.m
+
+  la = Int[]
+
+  i=1
+  while i<size(bm)[1]
+    j=1
+    lai=0
+    while bm[i,j]==0
+      lai += 1
+      j+=1
+    end
+    if lai==0
+      return la
+    else
+      push!(la,lai)
+      i+=1
+    end
+  end
+  return la    
+
+end
+
+
 
 ############
 # droop/drip/drop moves

@@ -65,6 +65,7 @@ include("schubert_sum.jl")
 include("mult_schub.jl")
 include("draw_bpds.jl")
 
-
+include("dominant_sum.jl")
+include("back_stable.jl")
 
 end

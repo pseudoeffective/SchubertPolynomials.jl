@@ -37,7 +37,7 @@ julia> R = xy_ring(5,0)[1];
 # Choose a permutation
 julia> w = [3,5,1,4,2];
 
-# Compute via transition classes
+# Compute via transition
 julia> pol1 = schub_poly(w, R, method="transition");
 
 # Compute via divided differences
@@ -69,7 +69,7 @@ julia> pol3==pol4
 true
 ```
 """
-function schub_poly(w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), 0 )[1]; method="auto", memo=false )
+function schub_poly(w, R::DoublePolyRing=xy_ring( max(length(w)-1,1) )[1]; method="auto", memo=false )
 
   w=trimw(w)
   ws = cutw(w)
@@ -710,6 +710,8 @@ function vex_det( la, ff )
   return det(A)
 
 end
+
+
 
 
 #=
