@@ -15,8 +15,6 @@ Return the back stable Schubert polynomial for the permutation `w`
 ## Arguments
 - `w::Vector{Int}`: A permutation
 - `R::DoublePolyRing`: The ambient polynomial ring, with underlying ring `R.ring` and variables `R.x_vars` and `R.y_vars`
-- `method`: An optional argument specifying the algorithm for computing.
-- `memo`: An optional argument for memoization (default=false)
 
 
 ## Returns
@@ -36,7 +34,7 @@ function back_schub_poly(w, R::DoublePolyRing=xy_ring( max(length(w)-1,1))[1] )
   for b in bpds
     la = dominant_part(b)
     if !(la in pars)
-      aa = acoeff(w,la)
+      aa = acoeff(w,la,R)
       push!(pars, la)
       push!(cfs, aa)
     end

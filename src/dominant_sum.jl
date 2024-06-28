@@ -154,7 +154,11 @@ function Base.show(io::IO, p::DominantSum{T}) where T
         end
         
         # Print the Schubert class, like ss[2,3,1]
-        print(io, "ss", par)
+        if length(par)>0
+          print(io, "ss", par)
+        else
+          print(io, "ss[]")
+        end
     end
 end
 
