@@ -21,7 +21,7 @@ julia> using SchubertPolynomials
 
 The package provides several methods for computing (double) Schubert and Grothendieck polynomials.  For example,
 ```julia-repl
-julia> w = [1,4,3,2];
+julia> w = [1,3,4,2];
 
 # set the ambient ring, this one just in three x variables
 julia> Rx = xy_ring(3)[1];
