@@ -8,7 +8,7 @@ This package provides functions for computing [Schubert polynomials](https://en.
 
 To use the package, first install Julia.  If you are new to this language, I recommend Ulrich Thiel's page on [JuLie](https://ulthiel.github.io/JuLie.jl/dev/), which in addition to providing software, has a nice introduction for the algebraically-minded mathematician.
 
-To install the SchubertPolynomial package do this:
+To install the SchubertPolynomials package do this:
 ```julia-repl
 julia> using Pkg
 julia> Pkg.add(url="https://github.com/pseudoeffective/SchubertPolynomials.jl")
