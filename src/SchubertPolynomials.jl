@@ -45,7 +45,7 @@ import Plots:
 
 export
 
-     ZZ, ZZMPolyRing, ZZMPolyRingElem,
+     ZZ, QQ, PolyRing, ZZMPolyRing, ZZMPolyRingElem, QQMPolyRing, QQMPolyRingElem,
 
      base_ring, polynomial_ring, gen, gens, nvars, vars, coefficients, evaluate
 

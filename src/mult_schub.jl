@@ -102,7 +102,7 @@ end
 
 
 # expand a polynomial in Schubert basis, default non-equivariant
-function expand_schub( f::Union{Int,ZZMPolyRingElem}, rnk::Int=maxvar( f ), R=xy_ring(rnk)[1] )
+function expand_schub( f::Union{Int,ZZMPolyRingElem}, rnk::Int=maxvar( f ), R::Union{ZZMPolyRing,DoublePolyRing}=xy_ring(rnk)[1] )
 
   return mult_schub( f, [1], rnk, R )
 
