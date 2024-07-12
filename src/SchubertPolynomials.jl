@@ -68,4 +68,6 @@ include("draw_bpds.jl")
 include("dominant_sum.jl")
 include("back_stable.jl")
 
+include("specialize.jl")
+
 end
