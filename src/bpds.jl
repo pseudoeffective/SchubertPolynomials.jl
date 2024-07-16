@@ -18,17 +18,17 @@ A type for bumpless pipe dreams
 
 A BPD `b` has one field, `b.m`, which is a Matrix{Int8}.  The entries are integers 0-5 which encode the six possible tiles as follows:
 
-   `O` <-> `0`
+   `□ ` <-> `O` <-> `0` (blank)
 
-   `+` <-> `1`
+   `┼─` <-> `+` <-> `1` (cross)
 
-   `/` <-> `2` (r-elbow)
+   `╭─` <-> `/` <-> `2` (r-elbow)
 
-   `%` <-> `3` (j-elbow)
+   `╯ ` <-> `%` <-> `3` (j-elbow)
 
-   `|` <-> `4`
+   `│ ` <-> `|` <-> `4` (vertical)
 
-   `-` <-> `5`
+   `──` <-> `-` <-> `5` (horizontal)
 
 ## Constructor
 
@@ -40,9 +40,9 @@ The function `BPD(m)` takes as its argument `m` either a matrix with entries of 
 julia> mtx = Matrix( [ 0 0 2 ; 0 2 1 ; 2 1 1 ] );
 
 julia> b = BPD( mtx )
-O O / 
-O / + 
-/ + + 
+ □ □ ╭─
+ □ ╭─┼─
+ ╭─┼─┼─ 
 
 julia> b == mtx
 false
@@ -50,13 +50,12 @@ false
 julia> b.m == mtx
 true
 
-julia> mtx2 = Matrix( [ "O" "O" "/"; "O" "/" "+"; "/" "+" "+" ] )
-3×3 Matrix{String}:
- "O" "O" "/" 
- "O" "/" "+" 
- "/" "+" "+" 
+julia> mtx2 = Matrix( [ "O" "O" "/"; "O" "/" "+"; "/" "+" "+" ] );
 
-julia> b2 = BPD(mtx2);
+julia> b2 = BPD( mtx2 )
+ □ □ ╭─
+ □ ╭─┼─
+ ╭─┼─┼─
 
 julia> b2 == b
 true
@@ -88,7 +87,14 @@ end
 # convert integers back to symbols for display
 # integers 0-5 map to bpd symbols, 6-8 for drifts, 9?
 function int_to_symbol(i::Int8)
-    symbols = ['O', '+', '/', '%', '|', '-', '.', '*', ' ', 'o']
+    symbols = ["\u25A1 ",  # "□ "
+        "\u253C\u2500",    # "┼─"
+        "\u256D\u2500",    # "╭─"
+        "\u256F ",         # "╯ "
+        "\u2502 ",         # "│ "
+        "\u2500\u2500",    # "──"
+        '.', '*', ' ', 'o'
+    ]
     return symbols[i+1]
 end
 
@@ -101,8 +107,9 @@ end
 function Base.show(io::IO, bpd::BPD)
     println(io)
     for i in 1:size(bpd.m, 1)
-        for j in 1:size(bpd.m, 2)
-            print(io, int_to_symbol(bpd.m[i, j]), " ")
+        print(" ")
+	for j in 1:size(bpd.m, 2)
+            print(io, int_to_symbol(bpd.m[i, j]))
         end
         println(io)
     end
@@ -131,12 +138,11 @@ Construct the Rothe BPD for a permutation
 julia> w = [3,2,5,1,4];
 
 julia> b = Rothe(w)
-
-O O / - - 
-O / + - - 
-O | | O / 
-/ + + - + 
-| | | / + 
+ □ □ ╭─────
+ □ ╭─┼─────
+ □ │ │ □ ╭─
+ ╭─┼─┼───┼─
+ │ │ │ ╭─┼─
 
 
 # View the integer matrix which is stored
@@ -710,27 +716,27 @@ julia> bps = all_bpds(w);
 # Form a vector of all BPDs for w
 
 julia> bpds = collect(bps)
-3-element Vector{Any}:
- 
-O O / - - 
-O / + - - 
-O | | O / 
-/ + + - + 
-| | | / + 
+3-element Vector{BPD}:
 
- 
-O O / - - 
-O O | / - 
-O / + % / 
-/ + + - + 
-| | | / + 
+□ □ ╭─────
+□ ╭─┼─────
+□ │ │ □ ╭─
+╭─┼─┼───┼─
+│ │ │ ╭─┼─
 
- 
-O O O / - 
-O / - + - 
-O | / % / 
-/ + + - + 
-| | | / + 
+
+□ □ ╭─────
+□ □ │ ╭───
+□ ╭─┼─╯ ╭─
+╭─┼─┼───┼─
+│ │ │ ╭─┼─
+
+
+□ □ □ ╭───
+□ ╭───┼───
+□ │ ╭─╯ ╭─
+╭─┼─┼───┼─
+│ │ │ ╭─┼─
 ```
 """
 function all_bpds(w)
@@ -814,34 +820,34 @@ julia> bps = all_Kbpds(w);
 # Form a vector of all BPDs for w
 
 julia> bpds = collect(bps)
-4-element Vector{Any}:
- 
-O O / - - 
-O / + - - 
-O | | O / 
-/ + + - + 
-| | | / + 
+4-element Vector{BPD}:
 
- 
-O O / - - 
-O O | / - 
-O / + % / 
-/ + + - + 
-| | | / + 
+□ □ ╭─────
+□ ╭─┼─────
+□ │ │ □ ╭─
+╭─┼─┼───┼─
+│ │ │ ╭─┼─
 
- 
-O O O / - 
-O O / + - 
-O / + % / 
-/ + + - + 
-| | | / + 
 
- 
-O O O / - 
-O / - + - 
-O | / % / 
-/ + + - + 
-| | | / + 
+□ □ ╭─────
+□ □ │ ╭───
+□ ╭─┼─╯ ╭─
+╭─┼─┼───┼─
+│ │ │ ╭─┼─
+
+
+□ □ □ ╭───
+□ □ ╭─┼───
+□ ╭─┼─╯ ╭─
+╭─┼─┼───┼─
+│ │ │ ╭─┼─
+
+
+□ □ □ ╭───
+□ ╭───┼───
+□ │ ╭─╯ ╭─
+╭─┼─┼───┼─
+│ │ │ ╭─┼─ 
 
 
 ```
@@ -961,27 +967,27 @@ julia> fbps = flat_bpds(w);
 # Form a vector of flat BPDs for w
 
 julia> fbpds = collect(fbps)
-3-element Vector{Any}:
- 
-O O / - - 
-O / + - - 
-O | | O / 
-/ + + - + 
-| | | / + 
+3-element Vector{BPD}:
 
- 
-O O / - - 
-O O | / - 
-O / + % / 
-/ + + - + 
-| | | / + 
+□ □ ╭─────
+□ ╭─┼─────
+□ │ │ □ ╭─
+╭─┼─┼───┼─
+│ │ │ ╭─┼─
 
- 
-O O O / - 
-O / - + - 
-O | / % / 
-/ + + - + 
-| | | / + 
+
+□ □ ╭─────
+□ □ │ ╭───
+□ ╭─┼─╯ ╭─
+╭─┼─┼───┼─
+│ │ │ ╭─┼─
+
+
+□ □ □ ╭───
+□ ╭───┼───
+□ │ ╭─╯ ╭─
+╭─┼─┼───┼─
+│ │ │ ╭─┼─
 ```
 """
 function flat_bpds(w)
@@ -1081,12 +1087,11 @@ julia> bpds = collect(all_Kbpds(w));
 # Convert a BPD to an ASM
 
 julia> b = bpds[3]
-
-O O O / - 
-O O / + - 
-O / + % / 
-/ + + - + 
-| | | / + 
+ □ □ □ ╭───
+ □ □ ╭─┼───
+ □ ╭─┼─╯ ╭─
+ ╭─┼─┼───┼─
+ │ │ │ ╭─┼─
 
 julia> a = bpd2asm(b)
 5×5 Matrix{Int8}:
