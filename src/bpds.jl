@@ -51,9 +51,10 @@ julia> b.m == mtx
 true
 
 julia> mtx2 = Matrix( [ "O" "O" "/"; "O" "/" "+"; "/" "+" "+" ] )
-O O / 
-O / + 
-/ + + 
+3×3 Matrix{String}:
+ "O" "O" "/" 
+ "O" "/" "+" 
+ "/" "+" "+" 
 
 julia> b2 = BPD(mtx2);
 
