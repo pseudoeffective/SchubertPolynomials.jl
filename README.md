@@ -177,7 +177,7 @@ julia> draw_bpd( bpds[1], saveto="bpd.png" )
 
 *Thanks to [Anders Buch](https://sites.math.rutgers.edu/~asbuch/) for convincing me to try out Julia.  Some of the functions in this package are based on his Maple code for multiplying Schubert polynomials.*
 
-*Thanks to [Hugh Dennin](https://www.asc.ohio-state.edu/dennin.3/index.html) for his contributions! 
+*Thanks to [Hugh Dennin](https://www.asc.ohio-state.edu/dennin.3/index.html) for his contributions!* 
 
 *Also check out Avery St. Dizier's [Mathematica package](https://github.com/avstdi/Schubert-Polynomial-Package) for Schubert polynomials.*
 
