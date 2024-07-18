@@ -2,7 +2,7 @@
 # David Anderson, April 2024
 
 
-export schub_poly, groth_poly, nschub, ngroth, dc2sd
+export schub_poly, groth_poly, nschub, ngroth, dc2sd, ddx, pdx
 
 # TO DO: clarify the logic and clean up tableau_components
 
@@ -69,7 +69,7 @@ julia> pol3==pol4
 true
 ```
 """
-function schub_poly(w, R::DoublePolyRing=xy_ring( max(length(w)-1,1) )[1]; method="auto", memo=false )
+function schub_poly(w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1) )[1]; method="auto", memo::Bool=false )
 
   w=trimw(w)
   ws = cutw(w)
@@ -148,7 +148,7 @@ julia> pol3==pol4
 true
 ```
 """
-function groth_poly(w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), 0 )[1]; method="dd" )
+function groth_poly(w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), 0 )[1]; method="dd" )
 
   if method=="dd"
     return groth_dd(w,R)
@@ -170,7 +170,7 @@ end
 
 
 
-function nschub(w)
+function nschub(w::Vector{Int})
 # count the number of terms in the Schubert polynomial
   w = trimw(w)
 
@@ -213,7 +213,7 @@ end
 
 
 
-function ngroth(w)
+function ngroth(w::Vector{Int})
 # count the number of terms in the Grothendieck polynomial
   w = trimw(w)
 
@@ -286,7 +286,7 @@ end
 
 
 
-function schub_bpd( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]  )
+function schub_bpd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]  )
 # compute schubert pol by bpd formula
   bpds=all_bpds(w)
 
@@ -303,7 +303,7 @@ end
 
 
 
-function schub_drifts( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+function schub_drifts( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
 # compute schubert pol by drift class formula
 
   fbpds = flat_bpds(w)
@@ -323,7 +323,7 @@ end
 
 
 #@memoize 
-function schub_trans( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+function schub_trans( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
 # compute schubert pol by transition formula
 
   mxt = max_transition(w)
@@ -362,7 +362,7 @@ function schub_trans( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(leng
 
 end
 
-@memoize function schub_trans_memo( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+@memoize function schub_trans_memo( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
 # compute schubert pol by transition formula, memoized
 
   mxt = max_transition(w)
@@ -402,7 +402,7 @@ end
 end
 
 
-function schub_dd( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+function schub_dd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
 # compute schubert pol by divided differences
 
   w=trimw(w)
@@ -436,7 +436,7 @@ end
 
 
 
-function groth_bpd( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]  )
+function groth_bpd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]  )
 # compute grothendieck pol by bpd formula
   bpds=all_Kbpds(w)
 
@@ -451,7 +451,7 @@ function groth_bpd( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length
 end
 
 
-@memoize function groth_dd( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+@memoize function groth_dd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
 # compute grothendieck pol by divided differences
 
   n=length(w)
@@ -491,7 +491,7 @@ end
 
 #############
 
-function sp0( n, R::DoublePolyRing=xy_ring( n-1, n-1 )[1] )
+function sp0( n::Int, R::DoublePolyRing=xy_ring( n-1, n-1 )[1] )
 
   x=R.x_vars
   y=R.y_vars
@@ -515,7 +515,7 @@ function sp0( n, R::DoublePolyRing=xy_ring( n-1, n-1 )[1] )
 end
 
 
-function gp0( n, R::DoublePolyRing=xy_ring( n-1, n-1 )[1] )
+function gp0( n::Int, R::DoublePolyRing=xy_ring( n-1, n-1 )[1] )
 
   x=R.x_vars
   y=R.y_vars
@@ -569,7 +569,7 @@ function dc2sd( dc::Drift, R::DoublePolyRing=xy_ring( size(dc.m)[1]-1, size(dc.m
 end
 
 
-function tableau_components(dc)
+function tableau_components(dc::Drift)
 # return labelled tableaux for a drift configuration dc
 # must take marked configuration as input
 
@@ -640,17 +640,23 @@ end
 #####################
 # difference operator
 
-function ddx(p,i,R)
+function ddx(p::ZZMPolyRingElem, i::Int, R::Union{ZZMPolyRing,DoublePolyRing}=parent(p))
 # p is a polynomial in R.x_vars
 
-  x = R.x_vars
+  if isa(R,ZZMPolyRing)
+    RR = R
+    x = gens(R)
+  elseif isa(R,DoublePolyRing)
+    RR = R.ring
+    x = R.x_vars
+  end
 
   if i>length(x)
-    return(R.ring(0))
+    return(RR(0))
   end
 
   if i==length(x)
-    p1 = evaluate( p, [x[i]], [R.ring(0)] )
+    p1 = evaluate( p, [x[i]], [RR(0)] )
     q=divrem( p-p1, x[i] )[1]
     return q
   end
@@ -665,17 +671,23 @@ end
 
 
 # isobaric difference operator
-function pdx(p,i,R)
+function pdx(p::ZZMPolyRingElem, i::Int, R::Union{ZZMPolyRing,DoublePolyRing}=parent(p))
 # p is a polynomial in R.x_vars
 
-  x = R.x_vars
+  if isa(R,ZZMPolyRing)
+    RR = R
+    x = gens(R)
+  elseif isa(R,DoublePolyRing)
+    RR = R.ring
+    x = R.x_vars
+  end
 
   if i>length(x)
     return(p)
   end
 
   if i==length(x)
-    p1 = evaluate( p, [x[i]], [R.ring(0)] )
+    p1 = evaluate( p, [x[i]], [RR(0)] )
     q=divrem( p-(1-x[i])*p1, x[i] )[1]
     return q
   end
@@ -690,7 +702,7 @@ end
 
 
 # for counting vexillary terms
-function vex_det( la, ff )
+function vex_det( la::Vector{Int}, ff::Vector{Int} )
 
   n=length(la)
 
@@ -716,7 +728,7 @@ end
 
 #=
 # temporary alternative, not used
-function schub_2drifts( w, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+function schub_2drifts( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
 # compute schubert pol by drift class formula
 
   fbpds = flat_bpds(w)
