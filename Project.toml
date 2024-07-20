@@ -11,11 +11,11 @@ Nemo = "2edaba10-b0f1-5616-af89-8c11ac63239a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [compat]
-julia = "1.6.7"
-AbstractAlgebra = "0.41"
+AbstractAlgebra = "0.41, 0.42"
 Memoization = "0.2"
 Nemo = "0.45"
 Plots = "1"
+julia = "1.6.7"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
