@@ -27,7 +27,7 @@ end
 
 
 
-function descents(w)
+function descents(w:Vector{Int})
 # compute the descent set
   n=length(w)
 
@@ -67,7 +67,7 @@ function cutw( w::Vector{Int} )
 end
 
 
-function findlast132( w )
+function findlast132( w::Vector{Int} )
 # find the lex-last subsequence of pattern 132, return its indices or [] if none
 
   n=length(w)
@@ -96,7 +96,7 @@ function findlast132( w )
 end
 
 
-function findlast2143( w )
+function findlast2143( w::Vector{Int} )
 # find the lex-last subsequence of pattern 2143, return its indices or [] if none
 
   n=length(w)
@@ -127,7 +127,7 @@ function findlast2143( w )
 end
 
 
-function maxinversion(w)
+function maxinversion(w::Vector{Int})
 
   n=length(w)
 
@@ -151,7 +151,7 @@ end
 
 
 
-function sij( w, i, j )
+function sij( w::Vector{Int}, i::Int, j::Int )
 # transposition w t_ij
 
   n=length(w)
@@ -199,7 +199,7 @@ function dominant_transition( w::Vector{Int} )
 end
 
 
-function max_transition( w )
+function max_transition( w::Vector{Int} )
 # do step in Lascoux-Schutzenberger transition tree
 
   pos = findlast2143(w)
@@ -227,7 +227,7 @@ function max_transition( w )
 end
 
 
-function trimw( w )
+function trimw( w::Vector{Int} )
 # remove trailing w(i)=i
   n=length(w)
 
