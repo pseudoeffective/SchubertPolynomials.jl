@@ -27,7 +27,7 @@ end
 
 
 
-function descents(w:Vector{Int})
+function descents(w::Vector{Int})
 # compute the descent set
   n=length(w)
 
