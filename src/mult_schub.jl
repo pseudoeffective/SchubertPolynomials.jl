@@ -2,7 +2,7 @@
 # David Anderson, June 2024.
 
 
-export mult_2schub, lrc, mult_schub, expand_schub
+export mult_2schub, lrc, mult_schub, expand_schub, maxvar
 
 
 # TO DO: in expand_schub, make default the parent ring of the input polynomial ring f
