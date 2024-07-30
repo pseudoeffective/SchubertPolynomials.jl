@@ -3,8 +3,11 @@
 # This version based on OSCAR
 
 
-export Tableau, schur_poly, ssyt
+	#- - - - - - - - - - - - - - - - - - - -#
+	#	Type, Constructors, & Iterators		#
+	#- - - - - - - - - - - - - - - - - - - -#
 
+export Tableau, ssyt
 
 struct Tableau
   t::Vector{Vector{Int}}
@@ -33,6 +36,9 @@ function shape(tab::Tableau)
 end
 
 
+
+		# * * Base Methods * * #
+
 # overload show to display Tableau
 function Base.show(io::IO, tab::Tableau)
     println(io)
@@ -52,6 +58,12 @@ end
 # overload identity for Tableau type
 Base.:(==)(tab1::Tableau,tab2::Tableau) = tab1.t==tab2.t
 
+
+
+		# * * SSYT Iterator* * * #
+	
+# *Not yet implemented as an interator.
+	
 
 function sstab( la::Vector{Int}, mu=[]; rowmin=false )
 # make the superstandard tableau from partition shape la(/mu)
@@ -92,131 +104,6 @@ function sstab( la::Vector{Int}, mu=[]; rowmin=false )
 
   return Tableau(tab)
 end
-
-
-# return the product of binomials
-function tab2bin( tab::Tableau, RR::DoublePolyRing; xoffset = 0, yoffset = 0 )
-  len = length(tab.t)
-
-  x = RR.x_vars
-  y = RR.y_vars
-
-  n = length(x)
-  m = length(y)
-
-  bin = RR.ring(1)
-
-  for i=1:len
-    for j=1:length( tab.t[i] )
-      tt = tab.t[i][j]
-      if tt>0
-        p=RR.ring(0)
-        if tt+xoffset<=n
-          p=p+x[tt+xoffset]
-        end
-        if tt+j-i+yoffset<=m && tt+j-i+yoffset>0
-          p=p+y[tt+j-i+yoffset]
-        end
-        bin = bin*p
-      end
-    end
-  end
-
-  return bin
-
-end
-
-
-# sum of binomials for a set of tableaux
-function ssyt2pol( tabs, RR::DoublePolyRing; xoffset=0, yoffset=0 )
-
-  pol=RR.ring(0)
-
-  for tab in tabs
-    pol = pol + tab2bin( tab, RR; xoffset=xoffset, yoffset=yoffset )
-  end
-
-  return pol
-
-end
-
-
-
-"""
-    schur_poly(la, ff, RR=xy_ring(length(la), length(la)+la[1])[1]; mu=[], xoffset=0, yoffset=0, rowmin=false)
-
-Compute the Schur polynomial corresponding to a given (skew) partition `la/mu` and a flag `ff`, in an optionally specified ring `RR`. The polynomial is constructed as an enumerator of semistandard Young tableaux of (skew) shape `la/mu` and bounded by the flagging condition `ff`.
-
-## Arguments
-- `la::Vector{Int}`: A partition represented as a vector of integers, specifying the shape of the Young diagram.
-- `ff::Union{Int,Vector{Int},Vector{Vector{Int}}}`: A flag specifying bounds on the tableaux. If `ff` is given as a single integer, it bounds the entries of the tableaux.  If `ff` is a vector of integers, it must be of length at least that of `la`; then `ff[i]` bounds the entries in the `i`th row of the tableaux.  If `ff` is a vector of vectors, it is interpreted as a tableaux whose shape is assumed to contain `la`; then the entries of `ff` bound the tableaux entrywise.
-- `RR::DoublePolyRing`: An optional argument specifying the double polynomial ring to use for constructing the Schur polynomial. Defaults to a ring constructed based on the size of `la`.
-- `mu::Vector{Int}`: An optional argument specifying a subpartition of `la`, for skew Schur polynomials. Defaults to an empty vector, for the straight shape `la`.
-- `xoffset::Int`: An optional argument specifying an offset value for the x-variable indices in the polynomial. Defaults to 0.
-- `yoffset::Int`: An optional argument specifying an offset value for the y-variable indices in the polynomial. Defaults to 0.
-- `rowmin::Bool`: An optional argument specifying whether to use row-minimal tableau, i.e., to require that entries in row `i` be at least `i`.  (This is a nontrivial condition only for skew shapes.) Defaults to `false`.
-
-## Returns
-- `ZZMPolyRingElem`: The Schur polynomial as an element of the specified polynomial ring `RR`.
-
-# Examples
-```julia-repl
-# Specify a partition
-julia> la = [2, 1]
-
-# Specify a bound for the x-variables
-julia> ff = 3
-
-# Compute the Schur polynomial
-julia> poly = schur_poly(la, ff)
-
-
-### To get the single Schur polynomial, change the coefficient ring
-julia> R = xy_ring(3,0)[1];
-
-julia> poly1 = schur_poly(la,ff,R)
-x1^2*x2 + x1^2*x3 + x1*x2^2 + 2*x1*x2*x3 + x1*x3^2 + x2^2*x3 + x2*x3^2
-
-```
-"""
-function schur_poly( la, ff::Vector{Vector{Int}}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
-  if length(la)==0
-    return RR.ring(1)
-  end
-
-  if length(RR.y_vars)==0
-     return schur_polynomial1_combinat( la, ff, RR, mu=mu, xoffset=xoffset, rowmin=rowmin )
-  end
-
-  tbs = ssyt( la, ff, mu=mu, rowmin=rowmin )
-
-  pol = ssyt2pol( tbs, RR; xoffset=xoffset, yoffset=yoffset )
-
-  return pol
-
-end
-
-###
-function schur_poly( la, ff::Vector{Int}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
-  if length(la)==0
-    return RR.ring(1)
-  end
-
-  return schur_poly( la, Vector{Vector{Int}}([fill(ff[i],la[i]) for i=1:length(la)]), RR; mu = mu, xoffset=xoffset, yoffset=yoffset, rowmin=rowmin )
-
-end
-
-###
-function schur_poly( la, ff::Int, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
-  if length(la)==0
-    return RR.ring(1)
-  end
-
-  return schur_poly( la, Vector{Int}(fill(ff,length(la))), RR; mu = mu, xoffset=xoffset, yoffset=yoffset, rowmin=rowmin )
-
-
-end
-
 
 
 """
@@ -350,8 +237,143 @@ function ssyt( lambda, ff::Int=length(la); mu = fill(0, length(lambda)), rowmin=
   ssyt( lambda, bd; mu=mu, rowmin=rowmin )
 end
 
-
 ################
+
+
+
+
+
+
+	#- - - - - - - - - - - -#
+	#	Tableau Methods		#
+	#- - - - - - - - - - - -#
+	
+		# * * Schur Polynomials * * #
+
+export schur_poly
+
+# return the product of binomials
+function tab2bin( tab::Tableau, RR::DoublePolyRing; xoffset = 0, yoffset = 0 )
+  len = length(tab.t)
+
+  x = RR.x_vars
+  y = RR.y_vars
+
+  n = length(x)
+  m = length(y)
+
+  bin = RR.ring(1)
+
+  for i=1:len
+    for j=1:length( tab.t[i] )
+      tt = tab.t[i][j]
+      if tt>0
+        p=RR.ring(0)
+        if tt+xoffset<=n
+          p=p+x[tt+xoffset]
+        end
+        if tt+j-i+yoffset<=m && tt+j-i+yoffset>0
+          p=p+y[tt+j-i+yoffset]
+        end
+        bin = bin*p
+      end
+    end
+  end
+
+  return bin
+
+end
+
+
+# sum of binomials for a set of tableaux
+function ssyt2pol( tabs, RR::DoublePolyRing; xoffset=0, yoffset=0 )
+
+  pol=RR.ring(0)
+
+  for tab in tabs
+    pol = pol + tab2bin( tab, RR; xoffset=xoffset, yoffset=yoffset )
+  end
+
+  return pol
+
+end
+
+
+
+"""
+    schur_poly(la, ff, RR=xy_ring(length(la), length(la)+la[1])[1]; mu=[], xoffset=0, yoffset=0, rowmin=false)
+
+Compute the Schur polynomial corresponding to a given (skew) partition `la/mu` and a flag `ff`, in an optionally specified ring `RR`. The polynomial is constructed as an enumerator of semistandard Young tableaux of (skew) shape `la/mu` and bounded by the flagging condition `ff`.
+
+## Arguments
+- `la::Vector{Int}`: A partition represented as a vector of integers, specifying the shape of the Young diagram.
+- `ff::Union{Int,Vector{Int},Vector{Vector{Int}}}`: A flag specifying bounds on the tableaux. If `ff` is given as a single integer, it bounds the entries of the tableaux.  If `ff` is a vector of integers, it must be of length at least that of `la`; then `ff[i]` bounds the entries in the `i`th row of the tableaux.  If `ff` is a vector of vectors, it is interpreted as a tableaux whose shape is assumed to contain `la`; then the entries of `ff` bound the tableaux entrywise.
+- `RR::DoublePolyRing`: An optional argument specifying the double polynomial ring to use for constructing the Schur polynomial. Defaults to a ring constructed based on the size of `la`.
+- `mu::Vector{Int}`: An optional argument specifying a subpartition of `la`, for skew Schur polynomials. Defaults to an empty vector, for the straight shape `la`.
+- `xoffset::Int`: An optional argument specifying an offset value for the x-variable indices in the polynomial. Defaults to 0.
+- `yoffset::Int`: An optional argument specifying an offset value for the y-variable indices in the polynomial. Defaults to 0.
+- `rowmin::Bool`: An optional argument specifying whether to use row-minimal tableau, i.e., to require that entries in row `i` be at least `i`.  (This is a nontrivial condition only for skew shapes.) Defaults to `false`.
+
+## Returns
+- `ZZMPolyRingElem`: The Schur polynomial as an element of the specified polynomial ring `RR`.
+
+# Examples
+```julia-repl
+# Specify a partition
+julia> la = [2, 1]
+
+# Specify a bound for the x-variables
+julia> ff = 3
+
+# Compute the Schur polynomial
+julia> poly = schur_poly(la, ff)
+
+
+### To get the single Schur polynomial, change the coefficient ring
+julia> R = xy_ring(3,0)[1];
+
+julia> poly1 = schur_poly(la,ff,R)
+x1^2*x2 + x1^2*x3 + x1*x2^2 + 2*x1*x2*x3 + x1*x3^2 + x2^2*x3 + x2*x3^2
+
+```
+"""
+function schur_poly( la, ff::Vector{Vector{Int}}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
+  if length(la)==0
+    return RR.ring(1)
+  end
+
+  if length(RR.y_vars)==0
+     return schur_polynomial1_combinat( la, ff, RR, mu=mu, xoffset=xoffset, rowmin=rowmin )
+  end
+
+  tbs = ssyt( la, ff, mu=mu, rowmin=rowmin )
+
+  pol = ssyt2pol( tbs, RR; xoffset=xoffset, yoffset=yoffset )
+
+  return pol
+
+end
+
+###
+function schur_poly( la, ff::Vector{Int}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
+  if length(la)==0
+    return RR.ring(1)
+  end
+
+  return schur_poly( la, Vector{Vector{Int}}([fill(ff[i],la[i]) for i=1:length(la)]), RR; mu = mu, xoffset=xoffset, yoffset=yoffset, rowmin=rowmin )
+
+end
+
+###
+function schur_poly( la, ff::Int, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
+  if length(la)==0
+    return RR.ring(1)
+  end
+
+  return schur_poly( la, Vector{Int}(fill(ff,length(la))), RR; mu = mu, xoffset=xoffset, yoffset=yoffset, rowmin=rowmin )
+end
+
+
 
 
 # faster polynomial constructor for single polynomials, based on OSCAR version
@@ -449,3 +471,225 @@ function schur_polynomial1_combinat(lambda::Vector{Int}, ff::Vector{Vector{Int}}
   end #while true
 end
 
+
+
+
+
+	# * * Tableaux operations * * #
+
+# returns the transpose of the Tableau T
+function Base.transpose(T::Tableau)
+	t = []
+	if length(T.t) > 0
+		for i in 1:length(T.t[1]) push!(t,[]) end
+		for row in T.t for j in 1:length(row)
+			push!(t[j],row[j])
+		end end
+	end
+	return Tableau(t)
+end
+
+
+
+	# * * Insertion Algorithms * * #
+
+export rsk_insert, rsk
+
+# RSK insert the biletter (q,p) into the bitableau (P,Q).
+function rsk_insert((P,Q)::Tuple{Tableau,Tableau},(q,p)::Tuple{Integer,Integer})
+	local PP = deepcopy(P)
+	local QQ = deepcopy(Q)
+	local pp = p
+	
+	local i = 1
+	while true
+		if i > length(PP.t)
+			push!(PP.t,[pp])
+			push!(QQ.t,[q])
+			break
+		elseif pp >= last(PP.t[i])
+			push!(PP.t[i],pp)
+			push!(QQ.t[i],q)
+			break
+		end
+		
+		for j in 1:length(PP.t[i])
+			if pp < PP.t[i][j]
+				local temp = PP.t[i][j]
+				PP.t[i][j] = pp
+				pp = temp
+				break
+			end
+		end
+		
+		i += 1
+	end
+	
+	return (PP,QQ)
+end
+
+# RSK insert the letter p into the tableau P
+function rsk_insert(P::Tableau,p::Integer)
+	return rsk_insert((P,P),(1,p))[1]
+end
+
+# RSK insert a biword into the bitableau (P,Q).
+function rsk_insert((P,Q)::Tuple{Tableau,Tableau},biword::Vector{<:Tuple{Vararg{Integer}}})
+	local PP = deepcopy(P)
+	local QQ = deepcopy(Q)
+	for (q,p) in sort(biword)
+		(PP,QQ) = rsk_insert((PP,QQ),(q,p))
+	end
+	return (PP,QQ)
+end
+
+# RSK insert a word into the tableau P.
+function rsk_insert(P::Tableau,word::Vector{<:Integer})
+	local PP = deepcopy(P)
+	for p in word
+		PP = rsk_insert(PP,p)
+	end
+	return PP
+end
+
+# sends a biword to its RSK tableau (P,Q).
+function rsk(biword::Vector{<:Tuple{Vararg{Integer}}})
+	local P = Tableau([])
+	local Q = Tableau([])
+	for (q,p) in sort(biword)
+		(P,Q) = rsk_insert((P,Q),(q,p))
+	end
+	return (P,Q)
+end
+
+# sends a word to its RSK recording insertion P
+function rsk(word::Vector{<:Integer})
+	return rsk([(i,word[i]) for i in 1:length(word)])
+end
+
+#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
+	--Example--
+	
+	julia> T0 = Tableau([[1,1,3],[2,4],[5,5]])
+	1 1 3
+	2 4
+	5 5
+	
+	julia> T1 = rsk_insert(T0,2)
+	1 1 2
+	2 3
+	4 5
+	5
+	
+	julia> T2 = rsk_insert(T1,[4,3,4])
+	1 1 2 3 4
+	2 3 4
+	4 5
+	5
+	
+	julia> biword = [(1,2),(1,5),(2,3),(2,5),(3,1),(3,1),(3,4),(3,5),(4,3),(5,4)];
+	
+	julia> (P,Q) = rsk(biword)
+	(
+	1 1 3 4
+	2 3 4 5
+	5 5
+	,
+	1 1 2 3
+	2 3 3 5
+	3 4
+	)
+	
+	julia> rsk_insert((P,Q),(6,2))
+	(
+	1 1 2 4
+	2 3 3 5
+	4 5
+	5
+	,
+	1 1 2 3
+	2 3 3 5
+	3 4
+	6
+	)
+	
++= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =#
+
+
+
+export edelman_greene_insert, edelman_greene
+
+# Edelman-Greene insert the biletter (q,p) into the bitableau (P,Q)
+function edelman_greene_insert((P,Q)::Tuple{Tableau,Tableau},(q,p)::Tuple{Integer,Integer})
+	local Pt = transpose(P)
+	local Qt = transpose(Q)
+	local pp = p
+	
+	local j = 1
+	while true
+		if j > length(Pt.t)
+			push!(Pt.t,[pp])
+			push!(Qt.t,[q])
+			break
+		elseif pp > last(Pt.t[j])
+			push!(Pt.t[j],pp)
+			push!(Qt.t[j],q)
+			break
+		end
+		
+		for i in 1:length(Pt.t[j])
+			if pp < Pt.t[j][i]
+				if Pt.t[j][i]==pp+1 && i>1 if Pt.t[j][i-1]==pp
+					pp += 1
+					break
+				end end
+				
+				local temp = Pt.t[j][i]
+				Pt.t[j][i] = pp
+				pp = temp
+				break
+			end
+		end
+		
+		j += 1
+	end
+	
+	return (transpose(Pt),transpose(Qt))
+end
+
+# Edelman-Greene insert a biword into the bitableau (P,Q)
+function edelman_greene_insert((P,Q)::Tuple{Tableau,Tableau},biword::Vector{<:Tuple{Vararg{Integer}}})
+	local PP = deepcopy(P)
+	local QQ = deepcopy(Q)
+	for (q,p) in biword
+		(PP,QQ) = edelman_greene_insert((PP,QQ),(q,p))
+	end
+	return (PP,QQ)
+end
+
+function edelman_greene(biword::Vector{<:Tuple{Vararg{Integer}}})
+	local P = Tableau([])
+	local Q = Tableau([])
+	for (q,p) in biword
+		(P,Q) = edelman_greene_insert((P,Q),(q,p))
+	end
+	return (P,Q)
+end
+
+#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
+	--Example--
+	
+	julia> biword = [(1,4),(1,2),(2,5),(2,3),(2,2),(3,4),(3,3)];
+	
+	julia> (P,Q) = edelman_greene_insert(biword)
+	(
+	2 3 4
+	3 4 5
+	4
+	,
+	1 1 2
+	2 2 3
+	3
+	)
+	
++= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =#
