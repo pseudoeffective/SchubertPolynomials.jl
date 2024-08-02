@@ -3,22 +3,24 @@ using Test
 
 
 if isempty(ARGS)
-   tests = [ 
-      "bpds.jl", 
-      "drifts.jl", 
-      "permtools.jl", 
-      "double_poly_ring.jl", 
-      "ssyt.jl", 
-      "schub_polys.jl", 
-      "schubert_sum.jl", 
-      "mult_schub.jl"
-    ]
+    tests = [ 
+		"subsets.jl",
+		"permutations.jl",
+        "permtools.jl", 
+        "double_poly_ring.jl", 
+        "ssyt.jl",
+        "bpds.jl", 
+        "drifts.jl",
+        "schub_polys.jl",
+        "schubert_sum.jl",
+        "mult_schub.jl"
+	]
 else
-   tests = ARGS
+    tests = ARGS
 end
 
 for test in tests
-   include(test)
+    include(test)
 end
 
 #=

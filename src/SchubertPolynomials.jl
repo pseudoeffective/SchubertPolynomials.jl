@@ -14,7 +14,8 @@ module SchubertPolynomials
 ################################################################################
 
 # Base
-import Base: *, transpose
+import Base:
+	*, transpose
 
 # AbstractAlgebra
 import AbstractAlgebra:
@@ -53,17 +54,18 @@ export
 # source files
 ################################################################################
 
+include("subsets.jl")
 include("double_poly_ring.jl")
 include("permtools.jl")
-include("permutations.jl") # meant to replace "permtools.jl", missing some functionality
-include("ssyt.jl") # must be included after "double_poly_ring.jl"
-include("pds.jl") # must be included after "permutations.jl"
+include("permutations.jl") # meant to replace `permtools.jl`, missing some functionality; must be included after `subsets.jl`
+include("ssyt.jl") # must be included after `double_poly_ring.jl`
+include("pds.jl") # must be included after `permutations.jl`
 include("bpds.jl")
 include("drifts.jl")
+include("draw_bpds.jl") # must be included after `bpds.jl` & `drifts.jl`
 include("schub_polys.jl")
 include("schubert_sum.jl")
 include("mult_schub.jl")
-include("draw_bpds.jl")
 
 include("dominant_sum.jl")
 include("back_stable.jl")
