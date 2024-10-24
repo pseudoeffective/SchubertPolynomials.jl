@@ -8,6 +8,7 @@ export Drift, drift_class, drift_poly, nw_reset, se_reset, markconfig, random_dr
 # TO DO: review function drift2bin(d::Drift, R::DoublePolyRing) which acts like bpd2bin, records a product of binomials x[i]+y[j]
 # TO DO: review function drift_poly(d::Drift, R::DoublePolyRing) which produces the drift polynomial from the iterator
 # TO DO: clarify the logic in markbox
+# TO DO: improve Base.show overload, better cross symbol
 
 #########
 
@@ -31,19 +32,27 @@ function Drift(matrix::Matrix{String})
     return Drift(int_matrix)
 end
 
-#= moved to bpds.jl
+
 
 # convert integers back to symbols for display
-function int_to_symbol(i::Int8)
-    symbols = ['O', '+', '/', '%', '|', '-', '.', '*', ' ', 'o']
+function int_to_symbol_drift(i::Int8)
+    symbols = ["\u25A1 ",  # "□ "
+        "\u002B ",    # \u271A "✚ "
+        "\u256D\u2500",    # "╭─"
+        "\u256F ",         # "╯ "
+        "\u2502 ",         # "│ "
+        "\u2500\u2500",    # "──"
+        "\u2022 ",         # "• "
+        '*', ' ', 'o'
+    ]
     return symbols[i+1]  
 end
 
-function int_to_symbol(t::Tuple)
+function int_to_symbol_drift(t::Tuple)
     return t[1]
 end
 
-=#
+
 
 
 # add method to display Drift
@@ -51,7 +60,7 @@ function Base.show(io::IO, dc::Drift)
     println(io)
     for i in 1:size(dc.m, 1)
         for j in 1:size(dc.m, 2)
-            print(io, int_to_symbol(dc.m[i, j]), " ")
+            print(io, int_to_symbol_drift(dc.m[i, j]), " ")
         end
         println(io)
     end
