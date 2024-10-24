@@ -36,14 +36,14 @@ end
 
 # convert integers back to symbols for display
 function int_to_symbol_drift(i::Int8)
-    symbols = ["\u25A1 ",  # "□ "
-        "\u002B ",    # \u271A "✚ "
+    symbols = ["\u25A1",  # "□ "
+        "\u002B",    # \u271A "✚ "
         "\u256D\u2500",    # "╭─"
-        "\u256F ",         # "╯ "
-        "\u2502 ",         # "│ "
+        "\u256F",         # "╯ "
+        "\u2502",         # "│ "
         "\u2500\u2500",    # "──"
-        "\u2022 ",         # "• "
-        '*', ' ', 'o'
+        "\u2B27",         # \u2022 "• "
+        '*', "\u00B7", 'o'
     ]
     return symbols[i+1]  
 end
