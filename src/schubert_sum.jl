@@ -1,13 +1,18 @@
-# Type for writing sums of Schubert classes
-# David Anderson, June 2024.
 
+#==============================================================================================================================+
+
+  schubert_sum.jl
+  David Anderson, June 2024.
+
+  Type for writing sums of Schubert classes.
+
++==============================================================================================================================#
 
 export SchubertSum
 
 # TO DO: documentation
 
-
-#########
+#==============================================================================================================================#
 
 
 # type for representing a sum of Schubert classes

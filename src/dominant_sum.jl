@@ -1,13 +1,18 @@
-# Type for writing Schubert classes in dominant basis
-# David Anderson, June 2024.
 
+#==============================================================================================================================+
+
+  dominant_sum.jl
+  David Anderson, June 2024.
+
+  Type for writing Schubert classes in dominant basis
+
++==============================================================================================================================#
 
 export DominantSum, trimp
 
 # TO DO: documentation
 
-
-#########
+#==============================================================================================================================#
 
 
 function trimp( par::Vector{Int} )

@@ -1,12 +1,18 @@
-# Tools for computing Schubert polynomials in Julia, using BPDs
-# David Anderson, April 2024
 
+#==============================================================================================================================+
+
+  schub_polys.jl
+  David Anderson, April 2024.
+
+  Tools for computing Schubert polynomials in Julia, using BPDs
+
++==============================================================================================================================#
 
 export schub_poly, groth_poly, nschub, ngroth, dc2sd, ddx, pdx
 
 # TO DO: clarify the logic and clean up tableau_components
 
-#############
+#==============================================================================================================================#
 
 """
     schub_poly(w, R; method)

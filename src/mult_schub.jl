@@ -1,14 +1,18 @@
-# Tools for multiplying Schubert polynomials in Julia
-# David Anderson, June 2024.
 
+#==============================================================================================================================+
+
+  mult_schub.jl
+  David Anderson, June 2024.
+
+  Tools for multiplying Schubert polynomials in Julia
+
++==============================================================================================================================#
 
 export mult_2schub, lrc, mult_schub, expand_schub, maxvar
 
-
 # TO DO: in expand_schub, make default the parent ring of the input polynomial ring f
 
-
-#########
+#==============================================================================================================================#
 
 """
     mult_2schub( uu, vv, rnk, R )

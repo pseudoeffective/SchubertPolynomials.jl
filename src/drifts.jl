@@ -1,16 +1,21 @@
-# Tools for working with drift configurations in Julia
-# David Anderson, February 2024.
 
+#==============================================================================================================================+
+
+  drifts.jl
+  David Anderson, February 2024.
+
+  Tools for working with drift configurations in Julia
+
++==============================================================================================================================#
 
 export Drift, drift_class, drift_poly, nw_reset, se_reset, markconfig, random_drift, partition2drift, bpd2drift
-
 
 # TO DO: review function drift2bin(d::Drift, R::DoublePolyRing) which acts like bpd2bin, records a product of binomials x[i]+y[j]
 # TO DO: review function drift_poly(d::Drift, R::DoublePolyRing) which produces the drift polynomial from the iterator
 # TO DO: clarify the logic in markbox
 # TO DO: improve Base.show overload, better cross symbol
 
-#########
+#==============================================================================================================================#
 
 struct Drift
     m::Matrix{Union{Int8,Tuple}}

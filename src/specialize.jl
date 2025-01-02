@@ -1,12 +1,18 @@
-# Functions for specializing Schubert polynomials
-# David Anderson, July 2024.
 
+#==============================================================================================================================+
+
+  specialize.jl
+  David Anderson, July 2024.
+
+  Functions for specializing Schubert polynomials
+  
++==============================================================================================================================#
 
 export localization, principal_specialization
 
 # TO DO: docs, tests
 
-#########
+#==============================================================================================================================#
 
 
 function localization( u::Vector{Int}, v::Vector{Int}, R::DoublePolyRing=xy_ring( length(v),length(v) )[1] )

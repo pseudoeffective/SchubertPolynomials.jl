@@ -1,13 +1,18 @@
-# Tools for manipulating permutations in Julia
-# David Anderson, April 2024
 
+#==============================================================================================================================+
+	
+	permtools.jl
+	David Anderson, April 2024.
+
+	Tools for manipulating permutations in Julia
+
++==============================================================================================================================#
 
 export len, descents, sij, dominant_transition, max_transition, trimw
 
+#==============================================================================================================================#
 
-###################
 # permutation tools
-
 
 function len( w::Vector{Int} )
 # coxeter length of a permutation (or word)

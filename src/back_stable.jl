@@ -1,11 +1,16 @@
-# Tools for computing back stable Schubert polynomials in Julia, using BPDs
-# David Anderson, June 2024
 
+#==============================================================================================================================+
+
+  back_stable.jl
+  David Anderson, June 2024.
+
+  Tools for computing back stable Schubert polynomials in Julia, using BPDs
+
++==============================================================================================================================#
 
 export back_schub_poly, acoeff
 
-
-#############
+#==============================================================================================================================#
 
 """
     back_schub_poly(w, R)

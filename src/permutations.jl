@@ -1,24 +1,25 @@
 
-#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
-    
+#==============================================================================================================================+
+
 	permutations.jl
-    Permutation module of SchubertPolynomials.jl
-    Hugh Dennin, 30 July 2024.
-    
-    This file contains the definition and methods for the struct Permutation, a type for permutations of \mathbb{Z} with finite support.
-    A Permutation object `w` consists of a single field `w.data` of type Vector{Int8}.
+	Hugh Dennin, 30 July 2024.
+	
+	Permutation module of `SchubertPolynomials.jl`.
+	
+	This file contains the definition and methods for the struct Permutation, a type for permutations of \mathbb{Z} with
+	finite support.
+	A Permutation object `w` consists of a single field `w.data` of type Vector{Int8}.
 	`w.data[2:length(w.data)] = [w[m], w[m+1], ..., w[M]]` is a permutation of some interval `[start,finish]` in \mathbb{Z}
-    `w.data[1] = start` records the initial position of this interval.
-    
-    WARNING: Do not attempt to make changes to w.data manually unless you know what you're doing!
+	`w.data[1] = start` records the initial position of this interval.
+	
+	WARNING: Do not attempt to make changes to w.data manually unless you know what you're doing!
 
-+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =#
++==============================================================================================================================#
 
 
-
-    #- - - - - - - - - - - - - - - - - - - -#
-    #    Type, Constructors, & Iterators    #
-    #- - - - - - - - - - - - - - - - - - - -#
+	#---------------------------------------#
+	#    Type, Constructors, & Iterators    #
+	#---------------------------------------#
 
 export Permutation, Permutations
 
@@ -28,11 +29,11 @@ struct Permutation
 	# constructor taking a vector of integers [w[m], w[m+1], ..., w[M]] that gives a permutation of an interval [m,M]
 	# inputs outside [m,M] are fixed
 	function Permutation(w::Vector{<:Integer})
-		return new(pushfirst!(w,minimum(w)))
+		return new(pushfirst!(deepcopy(w),minimum(w)))
 	end
 	
 	function Permutation(w::Vector{<:Integer},m::Integer)
-		return new(pushfirst!(w,m))
+		return new(pushfirst!(deepcopy(w),m))
 	end
 end
 
@@ -54,7 +55,8 @@ end
 # constructor taking any number of integer tuples (i1,w[i1]), (i2,w[i2]), ..., (ir,w[ir]), where inputs not given are fixed
 Permutation(rels::Tuple{Integer,Integer}...) = Permutation([rel for rel in rels])
 
-#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
+#==============================================================================================================================+
+
 	--Example--
 	
 	julia> Permutation([1,3,5,2,4])
@@ -75,7 +77,7 @@ Permutation(rels::Tuple{Integer,Integer}...) = Permutation([rel for rel in rels]
 	julia> Permutation()
 	Permutation(1)
 	
-+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =#
++==============================================================================================================================#
 
 
 
@@ -120,7 +122,8 @@ end
 # redefine Base.convert
 Base.convert(::Type{Permutation}, w::Vector{<:Integer}) = Permutation(w)
 
-#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
+#==============================================================================================================================+
+
 	--Example--
 	
 	julia> w = Permutation(1,4,2,3)
@@ -144,7 +147,7 @@ Base.convert(::Type{Permutation}, w::Vector{<:Integer}) = Permutation(w)
 	julia> Permutation(4,6,5,2,3,1) * Permutation(6,4,5,2,8,1,3,7)
 	Permutation(1, 2, 3, 6, 8, 4, 5, 7)
 	
-+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =#
++==============================================================================================================================#
 
 
 
@@ -197,8 +200,10 @@ function max!(w::Permutation)
 	return 1
 end
 
-#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
+#==============================================================================================================================+
+
 	--Example--
+
 	# This is a technical example, normally w.data should not be accessed by the user.
 	
 	julia> w = Permutation(1,2,5,8,6,4,3,7,9,10,11);
@@ -223,7 +228,7 @@ end
 	# start index = 3, perm data = [5,8,6,4,3,7] (final [9,10,11] cut off)
 	Int8[3, 5, 8, 6, 4, 3, 7]
 	
-+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =#
++==============================================================================================================================#
 
 
 
@@ -261,7 +266,8 @@ end
 Base.length(iter::Permutations) = iter.n<0 ? 0 : factorial(iter.n)
 Base.eltype(::Type{Permutations}) = Permutation
 
-#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
+#==============================================================================================================================+
+
 	--Example--
 	
 	julia> collect(Permutations(3))
@@ -283,13 +289,13 @@ Base.eltype(::Type{Permutations}) = Permutation
 	julia> collect(Permutations(-1))
 	Vector{Permutation}[]
 	
-+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =#
++==============================================================================================================================#
 
 
 
-    #- - - - - - - - - - - - - -#
-    #    Permutation Methods    #
-    #- - - - - - - - - - - - - -#
+	#---------------------------#
+	#    Permutation Methods    #
+	#---------------------------#
 	
 		# * * Special Permutations * * #
 
@@ -321,7 +327,8 @@ function longest_perm(n::Integer)
 	return Permutation(collect(n:-1:1),1)
 end
 
-#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
+#==============================================================================================================================+
+
 	--Example--
 	
 	julia> cycle([3,4,2])
@@ -339,7 +346,7 @@ end
 	julia> longest_perm(5)
 	Permutation(5, 4, 3, 2, 1)
 	
-+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =#
++==============================================================================================================================#
 
 
 
@@ -477,7 +484,8 @@ function maj(w::Vector{<:Integer}) return maj(Permutation(w)) end
 
 
 
-#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
+#==============================================================================================================================+
+
 	--Example--
 
 	julia> w = Permutation(1,3,5,2,8,7,6,4);
@@ -518,7 +526,7 @@ function maj(w::Vector{<:Integer}) return maj(Permutation(w)) end
 	julia> maj(w)
 	21
 
-+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =#
++==============================================================================================================================#
 
 
 
@@ -547,7 +555,8 @@ function is_reduced(word::Vector{<:Integer})
 end
 function is_reduced(word::Integer...) return is_reduced([i for i in word]) end
 
-#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
+#==============================================================================================================================+
+
 	--Example--
 	
 	julia> coxeter_product([3,2,3,1,3])
@@ -562,7 +571,7 @@ function is_reduced(word::Integer...) return is_reduced([i for i in word]) end
 	julia> is_reduced([3,2,3,1])
 	true
 	
-+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =#
++==============================================================================================================================#
 
 
 
@@ -627,7 +636,8 @@ function is_dominant(w::Vector{<:Integer}) return is_dominant(Permutation(w)) en
 function is_vexillary(w::Permutation) return max_2143(w) == Any[] end
 function is_vexillary(w::Vector{<:Integer}) return is_vexillary(Permutation(w)) end
 
-#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
+#==============================================================================================================================+
+
 	--Example--
 	
 	julia> w = Permutation(2,5,9,6,1,7,3,4,6,8,10);
@@ -648,7 +658,7 @@ function is_vexillary(w::Vector{<:Integer}) return is_vexillary(Permutation(w)) 
 	julia> println(max_pattern(w,[4,3,2,1]))
 	Int8[]
 	
-+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =#
++==============================================================================================================================#
 
 
 
@@ -696,7 +706,8 @@ end
 # implemented in "permtools.jl"
 #function max_transition(w::Vector{<:Integer}) max_transition(Permutation(w)) end
 
-#= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =+
+#==============================================================================================================================+
+
 	--Example--
 	
 	julia> w = Permutation(8,6,3,2,1,4,5,7); # w is dominant
@@ -731,7 +742,7 @@ end
 	julia> max_transition(v) == dominant_transition(v)
 	true
 	
-+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =# 
++==============================================================================================================================#
 
 
 

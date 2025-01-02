@@ -1,13 +1,18 @@
-# Tools for generating BPDs in Julia
-# David Anderson, 29 February 2024.
 
+#==============================================================================================================================+
 
+  bpds.jl
+  David Anderson, 29 February 2024.
+
+  Tools for generating BPDs in Julia
+
++==============================================================================================================================#
 
 export BPD, Rothe, all_bpds, all_Kbpds, flat_bpds, flat_drops, all_droops, bpd2asm, asm2bpd
 
-#############
-# BPD type and constructors
+#==============================================================================================================================#
 
+# BPD type and constructors
 
 """
     BPD
