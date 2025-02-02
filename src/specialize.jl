@@ -50,6 +50,8 @@ function principal_specialization( pol::ZZMPolyRingElem, R::Union{ZZMPolyRing,Do
 
    n = maxvar(pol)
 
+   if n==0 return(pol) end
+
    return evaluate( pol, [xx[i] for i=1:n], [ qq[1]^(i-1) for i=1:n ] )
 
 end
