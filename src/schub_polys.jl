@@ -168,53 +168,49 @@ end
 ######
 # just counting terms
 
-
-
-function nschub(w::Vector{Int})
+function nschub(w::Vector{Int}, cache::Dict{Int, Int} = Dict{Int,Int}())
 # count the number of terms in the Schubert polynomial
-  w = trimw(w)
 
-  if length(w)==0
-    return 1
-  end
+    idx = nthperm(w)
 
-  ws = cutw(w)
-
-  if length(ws)>1
-    return( nschub(ws[1])*nschub(ws[2]) ) 
-  end
-
-  mtx = max_transition(w)
-
-  if mtx==[]
-    b=makeflat(Rothe(w))
-    b=markconfig(b)
-    tt=tableau_components(b)[1]
-
-    ff = Int[]
-    for i in 1:length(tt[2])
-      push!(ff, last(tt[2][i]) )
+    # check cache first
+    if haskey(cache, idx)
+        return cache[idx]
     end
 
-    return round(Int, vex_det( tt[1], ff ) )
-  end
+    if w == collect(1:length(w))  # identity permutation
+        cache[idx] = 1
+        return 1
+    end
 
-  vv=mtx[2]
-  wws=mtx[3]
+    mtx = max_transition(w)
 
-  ss = nschub(vv)
+    if isempty(mtx)
+        la, ff = perm2flag(w)
+        result = round(Int, vex_det(la, ff))
+        cache[idx] = result
+        return result
+    end
 
-  for ww in wws
-    ss = ss+nschub(ww)
-  end
+    vv = mtx[2]
+    wws = mtx[3]
 
-  return ss
+    ss = nschub(vv, cache)
+
+    for ww in wws
+        ss += nschub(ww, cache)
+    end
+
+    cache[idx] = ss
+    return ss
 end
 
 
 
 function ngroth(w::Vector{Int})
 # count the number of terms in the Grothendieck polynomial
+# need to implement transition
+
   w = trimw(w)
 
   n = length(w)-1
@@ -708,8 +704,8 @@ function vex_det( la::Vector{Int}, ff::Vector{Int} )
 
   if n==0 return 1 end
 
-#  A = zeros(BigFloat,n,n) # may need this depending on float tolerance
-  A = zeros(n,n)
+  A = zeros(BigFloat,n,n) # may need this depending on float tolerance
+#  A = zeros(n,n)
 
   for i in 1:n
     for j in 1:n

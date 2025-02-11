@@ -2,7 +2,7 @@
 # David Anderson, April 2024
 
 
-export len, descents, sij, dominant_transition, max_transition, trimw
+export len, descents, sij, dominant_transition, max_transition, trimw, essential_set, vex2flag
 
 
 ###################
@@ -125,6 +125,56 @@ function findlast2143( w::Vector{Int} )
   return []
 
 end
+
+
+function essential_set(w::Vector{Int})
+# return essential set of triples (p,q,k) for a permutation w
+
+  ds = descents(w)
+
+  wi = invperm(w)
+
+  dsi = descents(wi)
+
+  ess = Tuple{Int,Int,Int}[]
+
+  for a in ds
+    for b in w[a]-1:-1:w[a+1]  # read b in descending order
+      if b in dsi && wi[b] > a && wi[b+1] <= a
+        k = sum(x -> x > b, w[1:a])
+        push!(ess,(a,b,k))
+      end
+    end
+  end
+
+  return ess
+
+end
+
+
+function vex2flag(w::Vector{Int})
+# given vexillary w, return shape la and flag ff for flagged Schur polynomial
+
+  ess = essential_set(w)
+
+  la = Int[]
+  ff = Int[]
+
+  while !isempty(ess)
+    p,q,ki=pop!(ess)
+    k=ki
+    while (isempty(ess)&& k>0) || (!isempty(ess) && k>ess[end][3])
+      pushfirst!(la,q-p+ki)
+      pushfirst!(ff,p)
+      k -=1
+    end
+  end
+
+  return la,ff
+
+end
+
+
 
 
 function maxinversion(w::Vector{Int})

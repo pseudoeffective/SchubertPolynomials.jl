@@ -3,7 +3,7 @@
 #
 # A Schubert Calculus package for Julia.
 #
-# Copyright (C) 2024 Dave Anderson, pseudoeffective.github.io
+# Copyright (C) 2025 Dave Anderson, pseudoeffective.github.io
 ################################################################################
 
 
@@ -16,6 +16,10 @@ module SchubertPolynomials
 # Base
 import Base:
 	*, transpose
+
+# Combinatorics
+import Combinatorics:
+	nthperm
 
 # AbstractAlgebra
 import AbstractAlgebra:
