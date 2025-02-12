@@ -186,7 +186,7 @@ function nschub(w::Vector{Int}, cache::Dict{Int, Int} = Dict{Int,Int}())
     mtx = max_transition(w)
 
     if isempty(mtx)
-        la, ff = perm2flag(w)
+        la, ff = vex2flag(w)
         result = round(Int, vex_det(la, ff))
         cache[idx] = result
         return result
