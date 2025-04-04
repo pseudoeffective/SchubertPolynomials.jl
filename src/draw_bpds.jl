@@ -2,7 +2,7 @@
 # David Anderson, October 2023.
 
 
-export draw_bpd
+export draw_bpd, print_all_bpds, print_all_Kbpds
 
 
 # updated to use integer matrices
