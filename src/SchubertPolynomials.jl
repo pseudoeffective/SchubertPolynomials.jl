@@ -39,7 +39,7 @@ import Memoization:
 
 # Plots
 import Plots:
-	plot, plot!, annotate!
+	plot, plot!, annotate!, savefig
 
 
 
