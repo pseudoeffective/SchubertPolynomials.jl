@@ -133,6 +133,16 @@ function print_flat_bpds(w,fn,fmt)
 end
 
 
+function print_all_Kbpds(w,fn,fmt)
+
+  i=0
+
+  for b in all_Kbpds(w)
+    i+=1
+    draw_bpd(b,saveto=string(fn,i,fmt),visible=false)
+  end
+
+end
 
 
 
