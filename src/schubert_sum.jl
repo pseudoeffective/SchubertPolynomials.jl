@@ -92,7 +92,7 @@ function coeff( ss::SchubertSum, w::Vector{Int} )
 
   wi = findfirst( isequal(w), ss.schubs )
 
-  wi==nothing ? cc=0 : cc=ss.coeffs[wi]
+  wi===nothing ? cc=0 : cc=ss.coeffs[wi]
 
   return cc
 end
@@ -157,7 +157,7 @@ function +(ss1::SchubertSum, ss2::SchubertSum) # add two Schubert sums
   for i in 1:length(ss1)
 
     vvi = findfirst(isequal(ss1.schubs[i]),sch)
-    if vvi==nothing
+    if vvi===nothing
       push!(sch,ss1.schubs[i])
       push!(cfs,ss1.coeffs[i])
     else

@@ -107,7 +107,7 @@ function coeff( ss::DominantSum, w::Vector{Int} )
 
   wi = findfirst( isequal(w), ss.pars )
 
-  wi==nothing ? cc=0 : cc=ss.coeffs[wi]
+  wi===nothing ? cc=0 : cc=ss.coeffs[wi]
 
   return cc
 end
@@ -176,7 +176,7 @@ function +(ss1::DominantSum, ss2::DominantSum) # add two Dominant sums
   for i in 1:length(ss1)
 
     vvi = findfirst(isequal(ss1.pars[i]),par)
-    if vvi==nothing
+    if vvi===nothing
       push!(par,ss1.pars[i])
       push!(cfs,ss1.coeffs[i])
     else

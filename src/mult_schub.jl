@@ -167,7 +167,7 @@ function monk(ss::SchubertSum, i::Int, rnk::Int, R::Union{DoublePolyRing,ZZMPoly
 
      if eq_coeff !=0
         vvi = findfirst(isequal(w),sch2)
-        if vvi==nothing
+        if vvi===nothing
           push!(sch2, w)
           push!(cfs2, eq_coeff*ss.coeffs[k])
         else
@@ -192,7 +192,7 @@ function monk(ss::SchubertSum, i::Int, rnk::Int, R::Union{DoublePolyRing,ZZMPoly
 
             vvi = findfirst(isequal(vv),sch2)  # see if vv is in the list
 
-            if vvi==nothing
+            if vvi===nothing
               push!(sch2,vv)
               push!(cfs2, -ss.coeffs[k])
             else  
@@ -207,7 +207,7 @@ function monk(ss::SchubertSum, i::Int, rnk::Int, R::Union{DoublePolyRing,ZZMPoly
 
        vvi = findfirst(isequal(vv),sch2)  # see if vv is in the list
 
-       if vvi==nothing
+       if vvi===nothing
           push!(sch2,vv)
           push!(cfs2, -ss.coeffs[k])
        else  
@@ -223,7 +223,7 @@ function monk(ss::SchubertSum, i::Int, rnk::Int, R::Union{DoublePolyRing,ZZMPoly
         vv = vcat( w, n+1:i-1, i+1,i )
         vvi = findfirst(isequal(vv),sch2)  # see if vv is in the list
 
-        if vvi==nothing
+        if vvi===nothing
           push!(sch2,vv)
           push!(cfs2, ss.coeffs[k])
         else  
@@ -245,7 +245,7 @@ function monk(ss::SchubertSum, i::Int, rnk::Int, R::Union{DoublePolyRing,ZZMPoly
 
            vvi = findfirst(isequal(vv),sch2)  # see if vv is in the list
 
-           if vvi==nothing
+           if vvi===nothing
              push!(sch2,vv)
              push!(cfs2, ss.coeffs[k])
            else  
@@ -260,7 +260,7 @@ function monk(ss::SchubertSum, i::Int, rnk::Int, R::Union{DoublePolyRing,ZZMPoly
 
         vvi = findfirst(isequal(vv),sch2)  # see if vv is in the list
 
-        if vvi==nothing
+        if vvi===nothing
           push!(sch2,vv)
           push!(cfs2, ss.coeffs[k])
         else  
