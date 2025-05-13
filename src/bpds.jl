@@ -115,6 +115,13 @@ function Base.show(io::IO, bpd::BPD)
     end
 end
 
+
+# add method to Base.size for BPD
+function Base.size(b::BPD)
+  size(b.m)[1]
+end
+
+
 # overload identity for BPD type
 Base.:(==)(b1::BPD, b2::BPD) = b1.m == b2.m
 
@@ -395,6 +402,49 @@ function can_Kdroop(bpd,i1,j1,i2,j2)
 end
 
 
+
+# for inverting droop moves
+function can_undroop(bpd,i1,j1,i2,j2)
+
+ # check rectangle bounds
+    if i2<i1+1 || j2<j1+1
+       return(false)
+    end
+
+ # check NW and SE corners
+    if (bpd.m[i1,j1],bpd.m[i2,j2])  != (0,3)
+      return(false)
+    end
+
+# check NE and SW corners
+    if !( bpd.m[i1,j2] in [2,4] ) || !( bpd.m[i2,j1] in [2,5] )
+         return(false)
+    end
+
+ # check N and S borders
+    for j=j1+1:j2-1
+       if !( bpd.m[i1,j] in [0,4]) || !(bpd.m[i2,j] in [1,5])
+         return(false)
+       end
+    end
+
+ # check W and E borders
+    for i=i1+1:i2-1
+       if !(bpd.m[i,j1] in [0,5]) || !(bpd.m[i,j2] in [1,4])
+         return(false)
+       end
+    end
+
+ # check inside of rectangle
+    for i=i1+1:i2-1
+      for j=j1+1:j2-1
+        if bpd.m[i,j] in [2,3]
+          return(false)
+        end
+      end
+    end
+  return(true)
+end
 
 
 
