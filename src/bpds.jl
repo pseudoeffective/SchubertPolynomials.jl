@@ -1540,7 +1540,7 @@ function countboxes( b::BPD )
   ct=0
 
   for ent in bpd.m
-    ent==0 && ct+=1
+    if ent==0  ct+=1 end
   end
 
   return ct
