@@ -1258,13 +1258,13 @@ function bpd2word( bpd::BPD )
   for s=-n+1:0
       for t=0:s+n-1
         k=get_sk_from_cross(bpd,(n-t,n+s-t))
-        k !=nothing && push!(wd, k)
+        k !==nothing && push!(wd, k)
       end
   end
   for s=1:n-1
       for t=0:n-s-1
         k=get_sk_from_cross(bpd,(n-s-t,n-t))
-        k !=nothing && push!(wd, k)
+        k !==nothing && push!(wd, k)
       end
   end
 
