@@ -75,7 +75,7 @@ function Base.size(d::Drift)
 end
 
 
-function can_drift(dc,i1,j1)
+function can_drift(dc::Drift,i1::Int,j1::Int)
 
  # check corners
     if dc.m[i1,j1] != 0 && !isa( dc.m[i1,j1], Tuple )
@@ -99,7 +99,7 @@ function can_drift(dc,i1,j1)
 
 end
 
-function drift( dc, i, j)
+function drift( dc::Drift, i::Int, j::Int)
 # perform drift move of dc at i,j if possible
 
   if can_drift(dc,i,j)
@@ -123,7 +123,7 @@ function drift( dc, i, j)
 end 
 
 
-function can_undrift(dc,i1,j1)
+function can_undrift(dc::Drift,i1::Int,j1::Int)
 
  # check corners
     if dc.m[i1,j1] != 0 && dc.m[i1,j1] != 7
@@ -146,7 +146,7 @@ function can_undrift(dc,i1,j1)
 
 end
 
-function undrift( dc, i, j)
+function undrift( dc::Drift, i::Int, j::Int)
 # perform drift move of dc at i,j if possible
 
   if can_undrift(dc,i,j)
@@ -168,7 +168,7 @@ function undrift( dc, i, j)
 end 
 
 
-function step_drifts(dc)
+function step_drifts(dc::Drift)
 # produce all one-step drifts of dc
    local n=size(dc.m)[1]
 
@@ -243,7 +243,7 @@ end
 
 
 
-function nw_reset(dc)
+function nw_reset(dc::Drift)
 # returns flat diagram in drift class of dc
    local n=size(dc.m)[1]
 
@@ -261,7 +261,7 @@ function nw_reset(dc)
 end   
 
 
-function se_reset(dc)
+function se_reset(dc::Drift)
 # returns sharp diagram in drift class of dc
    local n=size(dc.m)[1]
 
@@ -281,11 +281,41 @@ function se_reset(dc)
 end
 
 
+function can_cancel(dc::Drift, i::Int,j::Int)
+
+  if dc.m[i,j]!=0 return false end
+
+  if can_drift(dc,i,j) return can_cancel(drift(dc,i,j),i+1,j+1) end
+  if i>=size(dc) || j>=size(dc) return false end
+
+  if dc.m[i+1,j+1]!=1 return false end
+  if (dc.m[i+1,j] in [0,1]) || (dc.m[i,j+1] in [0,1]) return false end
+
+  return true
+
+end
+
+
+function cancel_drift(dc::Drift, i::Int, j::Int)
+
+  if !can_cancel(dc,i,j) return nothing end
+
+  dc2=deepcopy(dc)
+  dc2.m[i,j]=Int8(8)
+  for s=1:(size(dc)-min(i,j))
+    if dc2.m[i+s,j+s]==1
+      dc2.m[i+s,j+s]=Int8(8)
+      return Drift(dc2.m)
+    end
+  end
+
+end
+
 #####
 # Generating drift configurations
 #####
 
-function random_drift( n )
+function random_drift( n::Int )
 # random drift config of size n
 
   local possible_entries = Int8[0, 1, 8, 6, 7]
