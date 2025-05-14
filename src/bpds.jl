@@ -3,7 +3,7 @@
 
 
 
-export BPD, Rothe, all_bpds, all_Kbpds, flat_bpds, flat_drops, all_droops, bpd2asm, asm2bpd
+export BPD, Rothe, all_bpds, all_Kbpds, flat_bpds, flat_drops, all_droops, bpd2asm, asm2bpd, isreduced, bpd2perm, bpd2word
 
 #############
 # BPD type and constructors
@@ -1536,10 +1536,10 @@ end
 
 function countboxes( b::BPD )
 
-  n=size(bpd)
+  n=size(b)
   ct=0
 
-  for ent in bpd.m
+  for ent in b.m
     if ent==0  ct+=1 end
   end
 
@@ -1551,7 +1551,7 @@ end
 # decide if a BPD is reduced
 function isreduced( bpd::BPD )
 
-  ww = bpd2perm(b)
+  ww = bpd2perm(bpd)
 
   ct = countboxes(bpd)
 
