@@ -446,6 +446,72 @@ function can_undroop(bpd,i1,j1,i2,j2)
   return(true)
 end
 
+function can_unKdroop(bpd,i1,j1,i2,j2)
+
+  # check rectangle bounds
+  if i2<i1+1 || j2<j1+1
+     return false
+  end
+
+  # check NW and SE corners
+  if (bpd.m[i1,j1], bpd.m[i2,j2]) != (0,3)
+     return false
+  end
+
+  # check NE and SW corners
+  ne, sw = bpd.m[i1,j2], bpd.m[i2,j1]
+  if !((ne,sw) == (1,2) || (ne,sw) == (2,1))
+     return false
+  end
+
+  # check N and W borders (at most one 2)
+  aa,ii,jj = 0,0,0
+  for j=j1+1:j2-1
+     if bpd.m[i1,j]==3
+        return false
+     end
+     if bpd.m[i1,j]==2
+        aa+=1
+        if aa>1 return false end
+     end
+  end
+
+  for i=i1+1:i2-1
+     if bpd.m[i,j1]==3
+         return false
+     end
+     if bpd.m[i,j1]==2
+        aa+=1
+        if aa>1 return false end
+     end
+  end
+
+
+  # check S and E borders
+  for j=j1+1:j2-1
+     if !( bpd.m[i2,j] in [1,5] )
+         return false
+     end
+  end
+  for i=i1+1:i2-1
+     if !( bpd.m[i,j2] in [1,4] )
+         return false
+     end
+  end
+
+
+  # check inside of rectangle
+  for i=i1+1:i2-1
+    for j=j1+1:j2-1
+      if bpd.m[i,j] in [2,3]
+        return false
+      end
+    end
+  end
+
+  return true
+end
+
 
 
 function droop(bpd,i1,j1,i2,j2)
@@ -592,6 +658,190 @@ function Kdroop(bpd,i1,j1,i2,j2)
     end
 
     return(BPD(bpd2))
+end
+
+
+## invert the droop moves
+
+function undroop(bpd,i1,j1,i2,j2)
+    # assumes can_undroop(bpd,i1,j1,i2,j2) == true
+
+    bpd2 = deepcopy(bpd.m)
+
+    # restore the four corners
+    bpd2[i1,j1] = 2                     # NW
+    bpd2[i2,j2] = 0                     # SE
+
+    if bpd2[i1,j2] == 2                 # NE : ╭─ (2) came from ── (5)
+        bpd2[i1,j2] = 5
+    elseif bpd2[i1,j2] == 4             # NE : │ (4) came from ╯ (3)
+        bpd2[i1,j2] = 3
+    end
+
+    if bpd2[i2,j1] == 2                 # SW : ╭─ (2) came from │ (4)
+        bpd2[i2,j1] = 4
+    elseif bpd2[i2,j1] == 5             # SW : ── (5) came from ╯ (3)
+        bpd2[i2,j1] = 3
+    end
+
+    # west edge
+    for i = i1+1 : i2-1
+        if bpd2[i,j1] == 0
+            bpd2[i,j1] = 4
+        elseif bpd2[i,j1] == 5
+            bpd2[i,j1] = 1
+        end
+    end
+
+    # north edge
+    for j = j1+1 : j2-1
+        if bpd2[i1,j] == 0
+            bpd2[i1,j] = 5
+        elseif bpd2[i1,j] == 4
+            bpd2[i1,j] = 1
+        end
+    end
+
+    # east edge
+    for i = i1+1 : i2-1
+        if bpd2[i,j2] == 4
+            bpd2[i,j2] = 0
+        elseif bpd2[i,j2] == 1
+            bpd2[i,j2] = 5
+        end
+    end
+
+    # south edge
+    for j = j1+1 : j2-1
+        if bpd2[i2,j] == 5
+            bpd2[i2,j] = 0
+        elseif bpd2[i2,j] == 1
+            bpd2[i2,j] = 4
+        end
+    end
+
+    return BPD(bpd2)
+end
+
+
+
+function unKdroop(bpd,i1,j1,i2,j2)
+    # assumes can_unKdroop(bpd,i1,j1,i2,j2) == true
+
+    bpd2 = deepcopy(bpd.m)          # work on a copy
+
+    #####################################################################
+    # 0.  Locate the special border r-elbows allowed by Kdroop
+    #####################################################################
+    ii = findfirst(i -> bpd2[i,j1] == 2,  (i1+1):(i2-1))
+    if ii === nothing 
+       (ii = i2)     # no west‑edge r-elbow
+     else ii=ii+i1    # normalize
+    end
+
+    jj = findfirst(j -> bpd2[i1,j] == 2,  (j1+1):(j2-1))
+    if jj === nothing
+        (jj = j2)     # no north‑edge r-elbow
+     else jj=jj+j1     # normalize
+    end
+#println(ii," ", jj)
+
+    #####################################################################
+    # 1.  Restore the four corners
+    #####################################################################
+    bpd2[i1,j1] = 2                         # NW  : 0 → 2
+    # NE
+    if     bpd2[i1,j2] == 2  bpd2[i1,j2] = 5
+    elseif bpd2[i1,j2] == 1  bpd2[i1,j2] = 1
+    end
+    # SW
+    if     bpd2[i2,j1] == 2  bpd2[i2,j1] = 4
+    elseif bpd2[i2,j1] == 1  bpd2[i2,j1] = 1
+    end
+    # SE stays 3  (unchanged by Kdroop)
+
+    #####################################################################
+    # 2.  East border  (inverse of: 0→4, 5→1, 2→1)
+    #####################################################################
+
+    if ii<i2
+      for i = i1+1 : ii-1
+          v = bpd2[i,j2]
+          if      v == 4                 bpd2[i,j2] = 0
+          elseif  v == 1                 bpd2[i,j2] = 5
+          end
+      end
+
+      bpd2[ii,j2] = 2
+    end
+
+    #####################################################################
+    # 3.  South border  (inverse of: 0→5, 4→1, 2→1)
+    #####################################################################
+
+    if jj<j2
+      for j = j1+1 : jj-1
+          v = bpd2[i2,j]
+          if      v == 5                 bpd2[i2,j] = 0
+          elseif  v == 1                 bpd2[i2,j] = 4
+          end
+      end
+
+      bpd2[i2,jj] = 2
+    end
+
+
+    #####################################################################
+    # 4.  West border  (inverse of: 4→0, 1→5)
+    #####################################################################
+    for i = i1+1 : i2-1
+        v = bpd2[i,j1]
+        if      v == 0                 bpd2[i,j1] = 4
+        elseif  v == 5                 bpd2[i,j1] = 1
+    end
+    end
+    if ii < i2 && ii>i1                      # undo the injected 2
+        bpd2[ii,j1] = 4
+    end
+
+    #####################################################################
+    # 5.  Row ii across the rectangle  (inverse of: 0→5, 4→1)
+    #####################################################################
+    if ii < i2
+        for j = j1+1 : j2-1
+            v = bpd2[ii,j]
+            if      v == 5             bpd2[ii,j] = 0
+            elseif  v == 1             bpd2[ii,j] = 4
+            end
+        end
+    end
+
+    #####################################################################
+    # 6.  North border  (inverse of: 5→0, 1→4)
+    #####################################################################
+    for j = j1+1 : j2-1
+        v = bpd2[i1,j]
+        if      v == 0                 bpd2[i1,j] = 5
+        elseif  v == 4                 bpd2[i1,j] = 1
+        end
+    end
+    if jj < j2 && jj > j1                      # undo the injected 2
+        bpd2[i1,jj] = 5
+    end
+
+    #####################################################################
+    # 7.  Column jj down the rectangle  (inverse of: 0→4, 5→1)
+    #####################################################################
+    if jj < j2
+        for i = i1+1 : i2-1
+            v = bpd2[i,jj]
+            if      v == 4             bpd2[i,jj] = 0
+            elseif  v == 1             bpd2[i,jj] = 5
+            end
+        end
+    end
+
+    return BPD(bpd2)
 end
 
 
