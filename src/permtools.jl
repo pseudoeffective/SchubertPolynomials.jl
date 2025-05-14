@@ -1,8 +1,8 @@
 # Tools for manipulating permutations in Julia
-# David Anderson, April 2024
+# David Anderson, May 2025
 
 
-export len, descents, sij, dominant_transition, max_transition, trimw, essential_set, vex2flag
+export len, descents, sij, dominant_transition, max_transition, trimw, essential_set, vex2flag, word2perm
 
 
 ###################
@@ -285,6 +285,25 @@ function trimw( w::Vector{Int} )
   while n>0 && ww[n]==n
     pop!(ww)
     n=length(ww)
+  end
+
+  return ww
+
+end
+
+
+# Compute the Demazure (0-Hecke) product of a word in simple reflections
+function word2perm( wrd::Vector{Int} )
+
+  n = maximum(wrd)+1
+
+  ww = collect(1:n)
+
+  for i=1:length(wrd)
+    k=wrd[i]
+    if ww[k]<ww[k+1]
+     ww = vcat( ww[1:k-1], ww[k+1], ww[k], ww[k+2:n] )
+    end
   end
 
   return ww

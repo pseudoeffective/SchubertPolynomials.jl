@@ -1229,6 +1229,88 @@ function asm2bpd( a )
 end
 
 
+####################
+# Words and permutations
+####################
+
+function get_sk_from_cross( bpd::BPD, (i,j)::Tuple{Int,Int} )
+
+   if bpd.m[i,j] != 1 return nothing end
+
+   k=1
+   for s in 1:min(i,j)-1
+      if bpd.m[i-s,j-s] in [2,3,4,5]
+         k+=1
+      elseif bpd.m[i-s,j-s]==1
+         k+=2
+      end
+   end
+   return k
+
+end
+
+
+# extract word from bpd
+function bpd2word( bpd::BPD )
+  n=size(bpd)
+  wd = Int[]
+
+  for s=-n+1:0
+      for t=0:s+n-1
+        k=get_sk_from_cross(bpd,(n-t,n+s-t))
+        k !=nothing && push!(wd, k)
+      end
+  end
+  for s=1:n-1
+      for t=0:n-s-1
+        k=get_sk_from_cross(bpd,(n-s-t,n-t))
+        k !=nothing && push!(wd, k)
+      end
+  end
+
+
+  return wd
+
+end
+
+
+# get permutation associated to a BPD
+function bpd2perm( bpd::BPD )
+
+  wrd = bpd2word(bpd)
+
+  return word2perm( wrd )
+
+end
+
+
+function countboxes( b::BPD )
+
+  n=size(bpd)
+  ct=0
+
+  for ent in bpd.m
+    ent==0 && ct+=1
+  end
+
+  return ct
+
+end
+
+
+# decide if a BPD is reduced
+function isreduced( bpd::BPD )
+
+  ww = bpd2perm(b)
+
+  ct = countboxes(bpd)
+
+  return( len(ww)==ct )
+
+end
+
+
+
 
 ####################
 #not used
