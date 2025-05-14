@@ -66,6 +66,7 @@ include("ssyt.jl") # must be included after `double_poly_ring.jl`
 include("pds.jl") # must be included after `permutations.jl`
 include("bpds.jl")
 include("drifts.jl")
+include("drift_polys.jl") # must be included after `drifts.jl`
 include("draw_bpds.jl") # must be included after `bpds.jl` & `drifts.jl`
 include("schub_polys.jl")
 include("schubert_sum.jl")
