@@ -1,13 +1,10 @@
 # Tools for working with drift configurations in Julia
-# David Anderson, February 2024.
+# David Anderson, May 2025.
 
 
-export Drift, drift_class, nw_reset, se_reset, random_drift, partition2drift, bpd2drift
+export Drift, drift_class, nw_reset, se_reset, random_drift, partition2drift, bpd2drift, isintegrable, empty_drift
 
 
-# TO DO: review function drift2bin(d::Drift, R::DoublePolyRing) which acts like bpd2bin, records a product of binomials x[i]+y[j]
-# TO DO: review function drift_poly(d::Drift, R::DoublePolyRing) which produces the drift polynomial from the iterator
-# TO DO: clarify the logic in markbox
 # TO DO: improve Base.show overload, better cross symbol
 
 #########
@@ -296,24 +293,58 @@ function can_cancel(dc::Drift, i::Int,j::Int)
 end
 
 
-function cancel_drift(dc::Drift, i::Int, j::Int)
+function cancel_drift!(dc::Drift, i::Int, j::Int)
 
-  if !can_cancel(dc,i,j) return nothing end
+  if !can_cancel(dc,i,j) return dc end
 
-  dc2=deepcopy(dc)
-  dc2.m[i,j]=Int8(8)
+  dc.m[i,j]=Int8(8)
   for s=1:(size(dc)-min(i,j))
-    if dc2.m[i+s,j+s]==1
-      dc2.m[i+s,j+s]=Int8(8)
-      return Drift(dc2.m)
+    if dc.m[i+s,j+s]==1
+      dc.m[i+s,j+s]=Int8(8)
+      return dc
     end
   end
 
 end
 
+function cancel_all_drift(dc::Drift)
+  n=size(dc)
+  dc2=deepcopy(dc)
+
+  while countboxes(dc2)>0
+    for s=-n+1:0
+      for t=0:s+n-1
+        cancel_drift!(dc2,n-t,n+s-t)
+      end
+    end
+    for s=1:n-1
+      for t=0:n-s-1
+        cancel_drift!(dc2,n-s-t,n-t)
+      end
+    end
+  end
+
+  return dc2
+end
+
+function isintegrable(dc::Drift)
+  n=size(dc)
+  
+  return (cancel_all_drift(dc)==empty_drift(n))
+end
+
+
 #####
 # Generating drift configurations
 #####
+
+function empty_drift( n::Int )
+
+  mtx = fill( Int8(8),n,n )
+
+  return Drift(mtx)
+
+end
 
 function random_drift( n::Int )
 # random drift config of size n
@@ -366,3 +397,9 @@ function bpd2drift( bpd::BPD )
 
 end
 
+function countboxes( dc::Drift )
+
+  ct = count(==(0),dc.m)
+  return ct
+
+end
