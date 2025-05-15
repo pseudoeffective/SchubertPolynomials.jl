@@ -4,6 +4,9 @@
 
 export drift_poly, markconfig
 
+# TO DO: review function drift2bin(d::Drift, R::DoublePolyRing) which acts like bpd2bin, records a product of binomials x[i]+y[j]
+# TO DO: review function drift_poly(d::Drift, R::DoublePolyRing) which produces the drift polynomial from the iterator
+# TO DO: clarify the logic in markbox
 
 #####
 # Drift polynomials
