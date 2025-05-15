@@ -2,7 +2,7 @@
 # David Anderson, May 2025.
 
 
-export Drift, drift_class, nw_reset, se_reset, random_drift, partition2drift, bpd2drift, isintegrable, empty_drift
+export Drift, drift_class, nw_reset, se_reset, random_drift, partition2drift, bpd2drift, isintegrable, iscancelable, drift2rkmtx, rkmtx2asm, empty_drift
 
 
 # TO DO: improve Base.show overload, better cross symbol
@@ -333,11 +333,78 @@ function cancel_all_drift(dc::Drift)
   return dc2
 end
 
-function isintegrable(dc::Drift)
+function iscancelable(dc::Drift)
   n=size(dc)
   
   return (cancel_all_drift(dc)==empty_drift(n))
 end
+
+
+function drift2rkmtx(dc::Drift)
+
+  n=size(dc)
+  rkmtx = fill(0,n,n)
+  #first row
+  for j=1:n
+    if !(dc.m[1,j] in [0,1])
+      rkmtx[1,j]=1
+    elseif dc.m[1,j]==1
+      rkmtx[1,j]=2
+    end
+  end
+  #first column
+  for i=2:n
+    if !(dc.m[i,1] in [0,1])
+      rkmtx[i,1]=1
+    elseif dc.m[i,1]==1
+      rkmtx[i,1]=2
+    end
+  end
+  #rest
+  for i=2:n
+    for j=2:n
+      if dc.m[i,j]==0
+        rkmtx[i,j]=rkmtx[i-1,j-1]
+      elseif dc.m[i,j]==1
+        rkmtx[i,j]=rkmtx[i-1,j-1]+2
+      else
+        rkmtx[i,j]=rkmtx[i-1,j-1]+1
+      end
+    end
+  end
+
+  return rkmtx
+end
+
+function rkmtx2asm(mtx::Matrix{<:Integer})
+  n,m=size(mtx)
+  aa = fill(0,n,m)
+  if n==0 || m==0 return mtx end
+  #first row
+  aa[1,1]=mtx[1,1]
+  for j=2:m
+    aa[1,j]=mtx[1,j]-mtx[1,j-1]
+  end
+  #first column
+  for i=2:n
+    aa[i,1]=mtx[i,1]-mtx[i-1,1]
+  end
+  #rest
+  for i=2:n
+    for j=2:n
+      aa[i,j]=mtx[i-1,j-1]+mtx[i,j]-mtx[i-1,j]-mtx[i,j-1]    
+    end
+  end
+  return aa
+end
+
+function isintegrable(dc::Drift)
+  aa = rkmtx2asm( drift2rkmtx( dc ) )
+
+  return is_asm(aa)
+end
+
+
 
 
 #####
