@@ -309,6 +309,11 @@ function cancel_drift!(dc::Drift, i::Int, j::Int)
 end
 
 function cancel_all_drift(dc::Drift)
+  
+  if !all(x -> x == 0 || x == 1, dc.m)
+    return dc
+  end
+
   n=size(dc)
   dc2=deepcopy(dc)
 
@@ -347,10 +352,13 @@ function empty_drift( n::Int )
 
 end
 
-function random_drift( n::Int )
 # random drift config of size n
-
-  local possible_entries = Int8[0, 1, 8, 6, 7]
+function random_drift( n::Int ; extended::Bool=false)
+  if extended 
+    possible_entries = Int8[0, 1, 8, 6, 7]
+  else
+    possible_entries = Int8[0, 1, 8]
+  end
 
   return Drift(rand( possible_entries, n,n ))
 
