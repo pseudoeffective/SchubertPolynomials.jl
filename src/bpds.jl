@@ -3,7 +3,7 @@
 
 
 
-export BPD, Rothe, all_bpds, all_Kbpds, flat_bpds, flat_drops, all_droops, bpd2asm, asm2bpd, isreduced, bpd2perm, bpd2word
+export BPD, Rothe, all_bpds, all_Kbpds, flat_bpds, flat_drops, all_droops, bpd2asm, asm2bpd, is_asm, isreduced, bpd2perm, bpd2word
 
 #############
 # BPD type and constructors
@@ -1478,6 +1478,17 @@ function asm2bpd( a )
   return BPD(b)
 end
 
+# check if a matrix is a (partial) ASM
+function is_asm(mtx::Matrix{<:Integer})
+    n,m=size(mtx)
+    #check row and column sums
+    for i=1:n
+        for j=1:m
+            if !( sum(mtx[i,1:j]) in [0,1] ) || !( sum(mtx[1:i,j]) in [0,1] ) return false end
+        end
+    end
+    return true
+end
 
 ####################
 # Words and permutations
