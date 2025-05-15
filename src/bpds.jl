@@ -1536,13 +1536,7 @@ end
 
 function countboxes( b::BPD )
 
-  n=size(b)
-  ct=0
-
-  for ent in b.m
-    if ent==0  ct+=1 end
-  end
-
+  ct = count(==(0),b.m)
   return ct
 
 end
