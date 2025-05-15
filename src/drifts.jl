@@ -280,11 +280,12 @@ end
 
 function can_cancel(dc::Drift, i::Int,j::Int)
 
+  if i>=size(dc) || j>=size(dc) return false end
+ 
   if dc.m[i,j]!=0 return false end
 
   if can_drift(dc,i,j) return can_cancel(drift(dc,i,j),i+1,j+1) end
-  if i>=size(dc) || j>=size(dc) return false end
-
+ 
   if dc.m[i+1,j+1]!=1 return false end
   if (dc.m[i+1,j] in [0,1]) || (dc.m[i,j+1] in [0,1]) return false end
 
