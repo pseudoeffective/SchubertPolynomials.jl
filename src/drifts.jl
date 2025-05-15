@@ -310,7 +310,7 @@ end
 
 function cancel_all_drift(dc::Drift)
   
-  if !all(x -> x == 0 || x == 1, dc.m)
+  if !all(x -> x == 0 || x == 1 || x==8, dc.m)
     return dc
   end
 
@@ -318,6 +318,7 @@ function cancel_all_drift(dc::Drift)
   dc2=deepcopy(dc)
 
   while countboxes(dc2)>0
+    ctbx=countboxes(dc2)
     for s=-n+1:0
       for t=0:s+n-1
         cancel_drift!(dc2,n-t,n+s-t)
@@ -328,6 +329,7 @@ function cancel_all_drift(dc::Drift)
         cancel_drift!(dc2,n-s-t,n-t)
       end
     end
+    if ctbx==countboxes(dc2) return dc2 end
   end
 
   return dc2
