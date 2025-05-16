@@ -68,26 +68,26 @@ Base.:(==)(d1::Drift, d2::Drift) = d1.m == d2.m
 
 # add method to Base.size for Drift
 function Base.size(d::Drift)
-  size(d.m)[1]
+  size(d.m)
 end
 
 
-function can_drift(dc::Drift,i1::Int,j1::Int)
+function can_drift(dc::Drift,i::Int,j::Int)
 
  # check corners
-    if dc.m[i1,j1] != 0 && !isa( dc.m[i1,j1], Tuple )
+    if dc.m[i,j] != 0 && !isa( dc.m[i,j], Tuple )
       return(false)
     end
 
-    if dc.m[i1+1,j1] == 0 || isa( dc.m[i1+1,j1], Tuple ) || dc.m[i1+1,j1] == 1 || dc.m[i1+1,j1]==7
+    if dc.m[i+1,j] == 0 || isa( dc.m[i+1,j], Tuple ) || dc.m[i+1,j] == 1 || dc.m[i+1,j]==7
       return(false)
     end
 
-    if dc.m[i1,j1+1] == 0 || isa( dc.m[i1,j1+1], Tuple ) || dc.m[i1,j1+1] == 1 || dc.m[i1,j1+1]==7
+    if dc.m[i,j+1] == 0 || isa( dc.m[i,j+1], Tuple ) || dc.m[i,j+1] == 1 || dc.m[i,j+1]==7
       return(false)
     end
 
-    if dc.m[i1+1,j1+1] == 0 || isa( dc.m[i1+1,j1+1], Tuple ) || dc.m[i1+1,j1+1] == 1 || dc.m[i1+1,j1+1]==7
+    if dc.m[i+1,j+1] == 0 || isa( dc.m[i+1,j+1], Tuple ) || dc.m[i+1,j+1] == 1 || dc.m[i+1,j+1]==7
       return(false)
     end
 
@@ -120,22 +120,22 @@ function drift( dc::Drift, i::Int, j::Int)
 end 
 
 
-function can_undrift(dc::Drift,i1::Int,j1::Int)
+function can_undrift(dc::Drift,i::Int,j::Int)
 
  # check corners
-    if dc.m[i1,j1] != 0 && dc.m[i1,j1] != 7
+    if dc.m[i,j] != 0 && dc.m[i,j] != 7
       return(false)
     end
 
-    if dc.m[i1-1,j1] == 0 || dc.m[i1-1,j1] == 1 || dc.m[i1-1,j1]==7
+    if dc.m[i-1,j] == 0 || dc.m[i-1,j] == 1 || dc.m[i-1,j]==7
       return(false)
     end
 
-    if dc.m[i1,j1-1] == 0 || dc.m[i1,j1-1] == 1 || dc.m[i1,j1-1]==7
+    if dc.m[i,j-1] == 0 || dc.m[i,j-1] == 1 || dc.m[i,j-1]==7
       return(false)
     end
 
-    if dc.m[i1-1,j1-1] == 0 || dc.m[i1-1,j1-1] == 1 || dc.m[i1-1,j1-1]==7 || dc.m[i1-1,j1-1]==6
+    if dc.m[i-1,j-1] == 0 || dc.m[i-1,j-1] == 1 || dc.m[i-1,j-1]==7 || dc.m[i-1,j-1]==6
       return(false)
     end
 
@@ -167,7 +167,7 @@ end
 
 function step_drifts(dc::Drift)
 # produce all one-step drifts of dc
-   local n=size(dc.m)[1]
+   local n=size(dc)[1]
 
    local dfts = []
 
@@ -242,10 +242,10 @@ end
 
 function nw_reset(dc::Drift)
 # returns flat diagram in drift class of dc
-   local n=size(dc.m)[1]
+   local n,m=size(dc)
 
    for i=2:n
-     for j=2:n
+     for j=2:m
        if can_undrift(dc,i,j)
          local dc2=undrift(dc,i,j)
          return nw_reset(dc2)
@@ -260,10 +260,10 @@ end
 
 function se_reset(dc::Drift)
 # returns sharp diagram in drift class of dc
-   local n=size(dc.m)[1]
+   local n,m=size(dc)
 
    for i=1:n-1
-     for j=1:n-1
+     for j=1:m-1
 
        if can_drift(dc,i,j)
          dc2=copy(dc)
@@ -280,7 +280,7 @@ end
 
 function can_cancel(dc::Drift, i::Int,j::Int)
 
-  if i>=size(dc) || j>=size(dc) return false end
+  if i>=size(dc)[1] || j>=size(dc)[2] return false end
  
   if dc.m[i,j]!=0 return false end
 
@@ -299,7 +299,7 @@ function cancel_drift!(dc::Drift, i::Int, j::Int)
   if !can_cancel(dc,i,j) return dc end
 
   dc.m[i,j]=Int8(8)
-  for s=1:(size(dc)-min(i,j))
+  for s=1:min(size(dc)[1]i,size(dc)[2]-j)
     if dc.m[i+s,j+s]==1
       dc.m[i+s,j+s]=Int8(8)
       return dc
@@ -309,12 +309,14 @@ function cancel_drift!(dc::Drift, i::Int, j::Int)
 end
 
 function cancel_all_drift(dc::Drift)
+
+   n,m=size(dc)
+   if n!=m throw(error("Drift configuration must be square")) end
   
   if !all(x -> x == 0 || x == 1 || x==8, dc.m)
     return dc
   end
 
-  n=size(dc)
   dc2=deepcopy(dc)
 
   while countboxes(dc2)>0
@@ -336,18 +338,19 @@ function cancel_all_drift(dc::Drift)
 end
 
 function iscancelable(dc::Drift)
-  n=size(dc)
-  
+  n,m=size(dc)
+  if n!=m return false end
+
   return (cancel_all_drift(dc)==empty_drift(n))
 end
 
 
 function drift2rkmtx(dc::Drift)
 
-  n=size(dc)
-  rkmtx = fill(0,n,n)
+  n,m=size(dc)
+  rkmtx = fill(0,n,m)
   #first row
-  for j=1:n
+  for j=1:m
     if !(dc.m[1,j] in [0,1])
       rkmtx[1,j]=1
     elseif dc.m[1,j]==1
@@ -364,7 +367,7 @@ function drift2rkmtx(dc::Drift)
   end
   #rest
   for i=2:n
-    for j=2:n
+    for j=2:m
       if dc.m[i,j]==0
         rkmtx[i,j]=rkmtx[i-1,j-1]
       elseif dc.m[i,j]==1
@@ -393,7 +396,7 @@ function rkmtx2asm(mtx::Matrix{<:Integer})
   end
   #rest
   for i=2:n
-    for j=2:n
+    for j=2:m
       aa[i,j]=mtx[i-1,j-1]+mtx[i,j]-mtx[i-1,j]-mtx[i,j-1]    
     end
   end
@@ -421,15 +424,22 @@ function empty_drift( n::Int )
 
 end
 
-# random drift config of size n
-function random_drift( n::Int ; extended::Bool=false)
+# random drift config of size n,m
+function random_drift( n::Int, m::Int ; extended::Bool=false)
   if extended 
     possible_entries = Int8[0, 1, 8, 6, 7]
   else
     possible_entries = Int8[0, 1, 8]
   end
 
-  return Drift(rand( possible_entries, n,n ))
+  return Drift(rand( possible_entries, n,m ))
+
+end
+
+# random drift config of size n
+function random_drift( n::Int ; extended::Bool=false)
+
+  return random_drift( n,n, extended=extended)
 
 end
 
@@ -457,7 +467,7 @@ end
 function bpd2drift( bpd::BPD )
 # generate drift config from BPD
 
-  local n = size(bpd.m)[1]
+  local n = size(bpd)
 
   local bpd2=copy(bpd.m)
 

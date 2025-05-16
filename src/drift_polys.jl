@@ -13,11 +13,11 @@ export drift_poly, markconfig, dc2sd
 # Drift polynomials
 #####
 
-function drift2bin( d::Drift, R::DoublePolyRing=xy_ring( size(d.m)[1]-1, size(d.m)[2]-1 )[1] )
+function drift2bin( d::Drift, R::DoublePolyRing=xy_ring( size(d)[1], size(d)[2] )[1] )
 # product of binomials for d
 # requires DoublePolyRing
 # can get single polyn by using no y_vars
-  local n=size(d.m)[1]-1
+  n,m=size(d)
   bin = R.ring(1)
 
   x = R.x_vars
@@ -27,7 +27,7 @@ function drift2bin( d::Drift, R::DoublePolyRing=xy_ring( size(d.m)[1]-1, size(d.
   local bb=length(y)
 
   for i=1:n
-    for j=1:n
+    for j=1:m
 
       if d.m[i,j]==0 || d.m[i,j]==7 || isa(d.m[i,j],Tuple)
         p=R.ring(0)
@@ -48,7 +48,7 @@ function drift2bin( d::Drift, R::DoublePolyRing=xy_ring( size(d.m)[1]-1, size(d.
 end
 
 
-function drift_poly( d::Drift, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]  )
+function drift_poly( d::Drift, R::DoublePolyRing=xy_ring( size(d)[1] )[1]  )
 # compute drift pol by iterator
   dc=drift_class(d)
 
@@ -155,9 +155,9 @@ end
 
 function markbox( dc::Drift, i, j )
 
-  dr=dc.m
+  n,m = size(dc)
 
-  local n = size(dr)[1]
+  dr=dc.m
 
   if dr[i,j]==7
     return(0,false,0)
@@ -167,7 +167,7 @@ function markbox( dc::Drift, i, j )
     return dr[i,j]
   end
 
-  if i==n || j==n
+  if i==n || j==m
     return (0,false)
   end
 
@@ -180,7 +180,7 @@ function markbox( dc::Drift, i, j )
     local k1=markbox( dc, i, j+1 )[1]
     local k2=0
 #    while i+k2+1<n && j+k2<n && dr[i+k2+1,j+k2+1]==8
-    while k2<k1 && i+k2+1<n && j+k2<n
+    while k2<k1 && i+k2+1<n && j+k2<m
       if dr[i+k2+2,j+k2+1]==0 || isa( dr[i+k2+2,j+k2+1], Tuple )
         return (k2,true)
       end
@@ -196,7 +196,7 @@ function markbox( dc::Drift, i, j )
     local k1=markbox( dc, i+1, j )[1]
     local k2=0
 #    while i+k2<n && j+k2+1<n && dr[i+k2+1,j+k2+1]==8
-    while k2<k1 && i+k2<n && j+k2+1<n
+    while k2<k1 && i+k2<n && j+k2+1<m
       if dr[i+k2+1,j+k2+2]==0 || isa( dr[i+k2+1,j+k2+2], Tuple )
         return (k2,true)
       end
@@ -248,12 +248,12 @@ end
 function markconfig( dc::Drift )
 # mark interfering boxes in drift config dc
 
-  local n=size(dc.m)[1]
+  local n,m=size(dc)
 
-  local mm=Matrix{Any}(undef,n,n)
+  local mm=Matrix{Any}(undef,n,m)
 
   for i=1:n
-    for j=1:n
+    for j=1:m
       mm[i,j]=markbox( dc, i, j )
     end
   end
@@ -284,12 +284,12 @@ end
 
 function unmarkconfig(dc::Drift)
 
-  local n=size(dc.m)[1]
+  local n,m=size(dc)
 
-  local mm=Matrix{Any}(undef,n,n)
+  local mm=Matrix{Any}(undef,n,m)
 
   for i=1:n
-    for j=1:n
+    for j=1:m
       mm[i,j]=unmarkbox(dc,i,j)
     end
   end
@@ -317,14 +317,14 @@ function schub_drifts( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-
 end
 
 
-function dc2sd( dc::Drift, R::DoublePolyRing=xy_ring( size(dc.m)[1]-1, size(dc.m)[2]-1 )[1]  )
+function dc2sd( dc::Drift, R::DoublePolyRing=xy_ring( size(dc)[1], size(dc)[2] )[1]  )
 # drift configuration to s-polynomial
 # must take marked configuration as input
 
-  local n=size(dc.m)[1]
+  local n,m=size(dc)
 
-  for k=2*n:-1:2
-    for i=maximum([1,k-n]):minimum([n,k-1])
+  for k=(n+m):-1:2
+    for i=maximum([1,k-m]):minimum([n,k-1])
       if isa( dc.m[i,k-i], Tuple ) && dc.m[i,k-i][2]
         (dc1,dc2)=drift_split( dc, i, k-i )
         return ( dc2sd( dc1, R ) + dc2sd( dc2, R ) )
@@ -352,7 +352,7 @@ function tableau_components(dc::Drift)
 # return labelled tableaux for a drift configuration dc
 # must take marked configuration as input
 
-  local n=size(dc.m)[1]
+  local n,m=size(dc)
 
   if !isflat(dc)
     return( tableau_components( nw_reset(dc) ) )
@@ -363,7 +363,7 @@ function tableau_components(dc::Drift)
   local corners=Vector{Tuple{Int,Int}}([])
 
   for i=1:n
-    for j=1:n
+    for j=1:m
         if !( (i,j) in corners) && isa(dc.m[i,j],Tuple) && ((i,j)==(1,1) || (i>1 && j>1 && !isa( dc.m[i-1,j], Tuple) && !isa( dc.m[i,j-1],Tuple )  )) #find a new NW corner
         push!(corners,(i,j))
 
@@ -375,7 +375,7 @@ function tableau_components(dc::Drift)
         while i+s<=n && isa( dc.m[i+s,j], Tuple )
 
           local k=0
-          while j+k<=n && isa( dc.m[i+s,j+k], Tuple )  # find SE boxes
+          while j+k<=m && isa( dc.m[i+s,j+k], Tuple )  # find SE boxes
             k +=1
           end          
           push!(la,k)
