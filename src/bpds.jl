@@ -3,7 +3,7 @@
 
 
 
-export BPD, Rothe, all_bpds, all_Kbpds, flat_bpds, flat_drops, all_droops, bpd2asm, asm2bpd, is_asm, isreduced, bpd2perm, bpd2word
+export BPD, Rothe, all_bpds, all_Kbpds, flat_bpds, droop, undroop, Kdroop, unKdroop, flat_drops, all_droops, makeflat, bpd2asm, asm2bpd, is_asm, isreduced, bpd2perm, bpd2word
 
 #############
 # BPD type and constructors
