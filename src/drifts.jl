@@ -416,7 +416,7 @@ end
 # Generating drift configurations
 #####
 
-function empty_drift( n::Int, m::Int )
+function empty_drift( n::Int, m::Int=n )
 
   mtx = fill( Int8(8),n,m )
 
@@ -425,7 +425,7 @@ function empty_drift( n::Int, m::Int )
 end
 
 # random drift config of size n,m
-function random_drift( n::Int, m::Int ; extended::Bool=false)
+function random_drift( n::Int, m::Int=n ; extended::Bool=false)
   if extended 
     possible_entries = Int8[0, 1, 8, 6, 7]
   else
@@ -436,12 +436,6 @@ function random_drift( n::Int, m::Int ; extended::Bool=false)
 
 end
 
-# random drift config of size n
-function random_drift( n::Int ; extended::Bool=false)
-
-  return random_drift( n,n, extended=extended)
-
-end
 
 # make drift config from partition, so that boxes can drift to rows bounded by ff
 function partition2drift( lambda::Vector{Int}, ff::Vector{Int}=fill(length(lambda),length(lambda)), n::Int=maximum( [ maximum(ff), length(lambda), lambda[1] ] )  )
