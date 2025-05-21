@@ -41,7 +41,9 @@ import Memoization:
 import Plots:
 	plot, plot!, annotate!, savefig
 
-
+# Printf 
+import Printf:
+	@sprintf
 
 ################################################################################
 # Export (more exports are in the source files)
