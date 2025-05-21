@@ -416,9 +416,9 @@ end
 # Generating drift configurations
 #####
 
-function empty_drift( n::Int )
+function empty_drift( n::Int, m::Int )
 
-  mtx = fill( Int8(8),n,n )
+  mtx = fill( Int8(8),n,m )
 
   return Drift(mtx)
 
