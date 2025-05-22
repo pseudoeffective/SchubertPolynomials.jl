@@ -167,12 +167,12 @@ end
 
 function step_drifts(dc::Drift)
 # produce all one-step drifts of dc
-   local n=size(dc)[1]
+   local n,m=size(dc)
 
    local dfts = []
 
    for i=1:n-1
-     for j=1:n-1
+     for j=1:m-1
             if can_drift(dc,i,j)
               local dc2=drift(dc,i,j)
               push!(dfts,dc2)
