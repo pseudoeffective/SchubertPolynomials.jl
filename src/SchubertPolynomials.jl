@@ -37,6 +37,8 @@ import LinearAlgebra:
 import Memoization: 
 	@memoize
 
+
+#=
 # Plots
 import Plots:
 	plot, plot!, annotate!, savefig
@@ -44,6 +46,10 @@ import Plots:
 # Printf 
 import Printf:
 	@sprintf
+=#
+
+# bpds
+using BumplessPipeDreams
 
 ################################################################################
 # Export (more exports are in the source files)
@@ -52,7 +58,11 @@ import Printf:
 export
 	ZZ, QQ, PolyRing, ZZMPolyRing, ZZMPolyRingElem, QQMPolyRing, QQMPolyRingElem,
 	
-	base_ring, polynomial_ring, gen, gens, nvars, vars, coefficients, evaluate
+	base_ring, polynomial_ring, gen, gens, nvars, vars, coefficients, evaluate,
+
+	BPD, all_bpds, all_Kbpds, flat_bpds, Rothe, is_asm, bpd2asm, asm2bpd, bpd2word, 
+	
+	bpd2perm, isreduced, isflat
 
 
 
@@ -66,10 +76,10 @@ include("permtools.jl")
 include("permutations.jl") # meant to replace `permtools.jl`, missing some functionality; must be included after `subsets.jl`
 include("ssyt.jl") # must be included after `double_poly_ring.jl`
 include("pds.jl") # must be included after `permutations.jl`
-include("bpds.jl")
+#include("bpds.jl")
 include("drifts.jl")
 include("drift_polys.jl") # must be included after `drifts.jl`
-include("draw_bpds.jl") # must be included after `bpds.jl` & `drifts.jl`
+#include("draw_bpds.jl") # must be included after `bpds.jl` & `drifts.jl`
 include("schub_polys.jl")
 include("schubert_sum.jl")
 include("mult_schub.jl")

@@ -9,7 +9,7 @@ if isempty(ARGS)
         "permtools.jl", 
         "double_poly_ring.jl", 
         "ssyt.jl",
-        "bpds.jl", 
+       # "bpds.jl", 
         "drifts.jl",
         "schub_polys.jl",
         "schubert_sum.jl",

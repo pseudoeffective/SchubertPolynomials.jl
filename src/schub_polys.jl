@@ -225,11 +225,11 @@ end
 ######
 
 
-function bpd2bin( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.m)[1]-1, size(bpd.m)[2]-1 )[1]; version="schub"  )
+function bpd2bin( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.mtx)[1]-1, size(bpd.mtx)[2]-1 )[1]; version="schub"  )
 # product of binomials for bpd
 # requires DoublePolyRing
 # can get single polyn by using no y_vars
-  local n=size(bpd.m)[1]-1
+  local n=size(bpd.mtx)[1]-1
   bin = R.ring(1)
 
   x = R.x_vars
@@ -241,7 +241,7 @@ function bpd2bin( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.m)[1]-1, size(bp
   for i=1:n
     for j=1:n
 
-      if bpd.m[i,j]==0
+      if bpd.mtx[i,j]==0
         p=R.ring(0)
         if i<=aa
           p=p+x[i]
@@ -258,7 +258,7 @@ function bpd2bin( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.m)[1]-1, size(bp
         end
       end
 
-      if version=="groth" && bpd.m[i,j]==3
+      if version=="groth" && bpd.mtx[i,j]==3
         p=R.ring(1)
         if i<=aa
           p=p-x[i]

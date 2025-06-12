@@ -71,11 +71,11 @@ function acoeff( w::Vector{Int}, lambda::Vector{Int}, R::DoublePolyRing=xy_ring(
 end
 
 
-function bpd2bin_star( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.m)[1]-1, size(bpd.m)[2]-1 )[1] )
+function bpd2bin_star( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.mtx)[1]-1, size(bpd.mtx)[2]-1 )[1] )
 # product of binomials for bpd
 # only schub version now
 # can get single polyn by using no y_vars
-  local n=size(bpd.m)[1]-1
+  local n=size(bpd.mtx)[1]-1
   bin = R.ring(1)
 
   x = R.x_vars
@@ -90,7 +90,7 @@ function bpd2bin_star( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.m)[1]-1, si
   for i=1:n
     for j=la[i]+2:n
 
-      if bpd.m[i,j]==0
+      if bpd.mtx[i,j]==0
         p=R.ring(0)
         if i<=aa
           p=p+x[i]

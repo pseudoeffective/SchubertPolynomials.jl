@@ -239,6 +239,24 @@ function drift_class(dc::Drift)
 end
 
 
+"""
+    isflat(dc::Drift)
+
+Check if dc is flat
+"""
+function isflat(dc::Drift)
+  dcm = dc.m
+  local n=size(dcm)[1]
+
+  for i=2:n-1
+    for j=2:n-1
+      if dcm[i,j]==0 && dcm[i-1,j]!=0 && dcm[i,j-1]!=0 && dcm[i-1,j-1]==2
+         return(false)
+      end
+    end
+  end
+  return(true)
+end
 
 function nw_reset(dc::Drift)
 # returns flat diagram in drift class of dc
@@ -463,7 +481,7 @@ function bpd2drift( bpd::BPD )
 
   local n = size(bpd)
 
-  local bpd2=copy(bpd.m)
+  local bpd2=copy(bpd.mtx)
 
 
   for i=1:n

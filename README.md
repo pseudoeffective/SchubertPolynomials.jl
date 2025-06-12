@@ -138,41 +138,7 @@ julia> R = xy_ring(3,3)[1]
 julia> lrc( u,v,w, 3, R )
 y1 - y3
 ```
-
-The package can also produce nice-looking diagrams for BPDs, in several formats (PNG, PDF, etc.), depending on what backend the Plots package is using.  For example:
-```julia-repl
-julia> w = [5,2,1,4,3];
-
-julia> bpds = collect(all_bpds(w))
-3-element Vector{BPD}:
-                               
-□ □ □ □ ╭─
-□ ╭─────┼─
-╭─┼─────┼─
-│ │ □ ╭─┼─
-│ │ ╭─┼─┼─
-
-                
-□ □ □ □ ╭─
-□ ╭─────┼─
-□ │ ╭───┼─
-╭─┼─╯ ╭─┼─
-│ │ ╭─┼─┼─
-
-                
-□ □ □ □ ╭─
-□ □ ╭───┼─
-╭───┼───┼─
-│ ╭─╯ ╭─┼─
-│ │ ╭─┼─┼─
-
-
-
-julia> draw_bpd( bpds[1], saveto="bpd.png" )
-```
-![bpd](https://github.com/pseudoeffective/bpds/assets/62109185/96d60283-f7ed-4a88-bf7c-75c3b8cd9e30)
-
-
+The SchubertPolynomials package requires [BumplessPipeDreams](https://github.com/pseudoeffective/BumplessPipeDreams.jl).
 
 
 *Thanks to [Anders Buch](https://sites.math.rutgers.edu/~asbuch/) for convincing me to try out Julia.  Some of the functions in this package are based on his Maple code for multiplying Schubert polynomials.*
