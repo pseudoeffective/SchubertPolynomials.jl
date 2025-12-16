@@ -48,7 +48,7 @@ function back_schub_poly(w, R::DoublePolyRing=xy_ring( max(length(w)-1,1))[1] )
     end
   end
 
-  return DominantSum(cfs,pars)
+  return sort_dominant_sum( DominantSum(cfs,pars) )
 end
 
 
