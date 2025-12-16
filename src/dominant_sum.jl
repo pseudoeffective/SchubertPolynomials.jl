@@ -2,7 +2,7 @@
 # David Anderson, June 2024.
 
 
-export DominantSum, trimp
+export DominantSum, trimp, coeff
 
 # TO DO: documentation
 

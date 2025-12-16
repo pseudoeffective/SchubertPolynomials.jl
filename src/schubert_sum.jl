@@ -2,7 +2,7 @@
 # David Anderson, June 2024.
 
 
-export SchubertSum
+export SchubertSum, coeff
 
 # TO DO: documentation
 
@@ -208,7 +208,12 @@ end
 
 
 
-function condense(ss::SchubertSum) # remove zeroes from Schubert sum, and trim indexing permutations
+"""
+    condense(ss::SchubertSum)
+
+remove zeroes from Schubert sum, trim indexing permutations, and sort terms
+"""
+function condense(ss::SchubertSum)
 
   ll = length(ss)
   sch = ss.schubs
@@ -236,7 +241,7 @@ function condense(ss::SchubertSum) # remove zeroes from Schubert sum, and trim i
 
   ssnew = SchubertSum( cfs, sch )
 
-  return ssnew
+  return sort_schubert_sum(ssnew)
 
 end
 
