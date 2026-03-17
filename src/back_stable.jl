@@ -2,7 +2,7 @@
 # David Anderson, June 2024
 
 
-export back_schub_poly, acoeff
+export back_schub_poly, acoeff, schub2dom
 
 
 #############
@@ -110,3 +110,54 @@ function bpd2bin_star( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.mtx)[1]-1, 
 
 end
 
+"""
+    schub2dom(SS, R)
+
+Convert a `SchubertSum` to a `DominantSum` by expanding each Schubert polynomial S[w]
+as a back stable Schubert polynomial in the dominant basis.
+
+## Arguments
+- `SS::SchubertSum`: A sum of Schubert polynomials
+- `R::DoublePolyRing`: The ambient polynomial ring (optional, will be inferred from the largest permutation if not provided)
+
+## Returns
+`DominantSum`: the sum expressed in the basis of dominant polynomials
+
+## Example
+
+```julia-repl
+julia> R = xy_ring(4,4)[1];
+
+julia> SS = SchubertSum([1, 1], [[2,1,3], [1,3,2]]);
+
+julia> schub2dom(SS, R)
+```
+"""
+function schub2dom(SS::SchubertSum, R::DoublePolyRing)
+
+    # Start with the zero DominantSum in the polynomial ring
+    result = DominantSum([R.ring(0)], [[0]])
+
+    # For each term c*S[w] in the SchubertSum
+    for (c, w) in zip(SS.coeffs, SS.schubs)
+        # Convert S[w] to dominant basis
+        dom_poly = back_schub_poly(w, R)
+
+        # Multiply by the coefficient and add to result
+        result = result + c * dom_poly
+    end
+
+    return condense(result)
+end
+
+# Version without explicit R argument - infer the ring size
+function schub2dom(SS::SchubertSum)
+
+    # Find the maximum length among all permutations in SS
+    max_len = maximum(length.(SS.schubs))
+
+    # Create appropriate ring
+    R = xy_ring(max(max_len - 1, 1))[1]
+
+    return schub2dom(SS, R)
+end
