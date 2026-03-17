@@ -167,7 +167,7 @@ end
 ######
 # just counting terms
 
-function nschub(w::Vector{Int}, cache::Dict{Int, Int} = Dict{Int,Int}())
+function nschub(w::Vector{Int}, cache::Dict{BigInt, BigInt} = Dict{BigInt,BigInt}())
 # count the number of terms in the Schubert polynomial
 
     idx = nthperm(w)
@@ -186,7 +186,7 @@ function nschub(w::Vector{Int}, cache::Dict{Int, Int} = Dict{Int,Int}())
 
     if isempty(mtx)
         la, ff = vex2flag(w)
-        result = round(Int, vex_det(la, ff))
+        result = round(BigInt, vex_det(la, ff))
         cache[idx] = result
         return result
     end
