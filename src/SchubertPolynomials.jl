@@ -80,6 +80,7 @@ include("pds.jl") # must be included after `permutations.jl`
 include("drifts.jl")
 include("drift_polys.jl") # must be included after `drifts.jl`
 #include("draw_bpds.jl") # must be included after `bpds.jl` & `drifts.jl`
+include("packed_perms.jl") # must be included before `schub_polys.jl`
 include("schub_polys.jl")
 include("schubert_sum.jl")
 include("mult_schub.jl")

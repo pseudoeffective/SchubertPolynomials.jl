@@ -2,7 +2,7 @@
 # David Anderson, April 2024
 
 
-export schub_poly, groth_poly, nschub, ngroth, ddx, pdx
+export schub_poly, groth_poly, nschub, nschub_legacy, ngroth, ddx, pdx
 
 # TO DO: simplify calling methods for schub_poly
 #############
@@ -167,8 +167,12 @@ end
 ######
 # just counting terms
 
-function nschub(w::Vector{Int}, cache::Dict{BigInt, BigInt} = Dict{BigInt,BigInt}())
-# count the number of terms in the Schubert polynomial
+"""
+    nschub_legacy(w, cache)
+
+Legacy implementation of nschub using max_transition and vex_det.
+"""
+function nschub_legacy(w::Vector{Int}, cache::Dict{BigInt, BigInt} = Dict{BigInt,BigInt}())
 
     idx = nthperm(w)
 
@@ -194,14 +198,172 @@ function nschub(w::Vector{Int}, cache::Dict{BigInt, BigInt} = Dict{BigInt,BigInt
     vv = mtx[2]
     wws = mtx[3]
 
-    ss = nschub(vv, cache)
+    ss = nschub_legacy(vv, cache)
 
     for ww in wws
-        ss += nschub(ww, cache)
+        ss += nschub_legacy(ww, cache)
     end
 
     cache[idx] = ss
     return ss
+end
+
+
+######
+# Transition DFS for nschub (bit-packed)
+
+function _nschub_transition(code::T, n::Int, cache::Dict{T, BigInt}) where T <: PackedPerm
+    haskey(cache, code) && return cache[code]
+
+    r, s = find_transition_rs(code, n)
+    if r == 0
+        # Dominant permutation: return 1
+        cache[code] = BigInt(1)
+        return BigInt(1)
+    end
+
+    v = swap_positions(code, r, s)
+    result = _nschub_transition(v, n, cache)
+
+    vr = get_val(v, r)
+    for i in 1:r-1
+        if get_val(v, i) < vr && is_bruhat_cover_up(v, i, r)
+            wprime = swap_positions(v, i, r)
+            result += _nschub_transition(wprime, n, cache)
+        end
+    end
+
+    cache[code] = result
+    return result
+end
+
+
+######
+# Cotransition DFS for nschub (bit-packed)
+
+function _nschub_cotrans(code::T, n::Int, cache::Dict{T, BigInt}) where T <: PackedPerm
+    haskey(cache, code) && return cache[code]
+
+    ci = find_cotrans_index(code, n)
+    if ci == 0
+        # w0: return 1
+        cache[code] = BigInt(1)
+        return BigInt(1)
+    end
+
+    pi_ci = get_val(code, ci)
+    result = BigInt(0)
+
+    for a in 1:n
+        for b in a+1:n
+            if is_bruhat_cover_up(code, a, b)
+                sigma_ci = ci == a ? get_val(code, b) : (ci == b ? get_val(code, a) : pi_ci)
+                if sigma_ci != pi_ci
+                    cover = swap_positions(code, a, b)
+                    result += _nschub_cotrans(cover, n, cache)
+                end
+            end
+        end
+    end
+
+    cache[code] = result
+    return result
+end
+
+
+######
+# Cotransition BFS (sort-reduce) for nschub (bit-packed)
+
+function _nschub_cotrans_bfs(code::T, n::Int) where T <: PackedPerm
+    max_ell = n * (n - 1) ÷ 2
+    ell = perm_length(code, n)
+    ell == max_ell && return BigInt(1)
+
+    layer = Dict{T, BigInt}(code => BigInt(1))
+
+    for level in ell:max_ell-1
+        next = Dict{T, BigInt}()
+        for (pi_code, pi_val) in layer
+            ci = find_cotrans_index(pi_code, n)
+            ci == 0 && continue
+            pi_ci = get_val(pi_code, ci)
+            for a in 1:n
+                for b in a+1:n
+                    if is_bruhat_cover_up(pi_code, a, b)
+                        sigma_ci = ci == a ? get_val(pi_code, b) : (ci == b ? get_val(pi_code, a) : pi_ci)
+                        if sigma_ci != pi_ci
+                            sigma_code = swap_positions(pi_code, a, b)
+                            next[sigma_code] = get(next, sigma_code, BigInt(0)) + pi_val
+                        end
+                    end
+                end
+            end
+        end
+        layer = next
+    end
+
+    return sum(values(layer); init=BigInt(0))
+end
+
+
+######
+# Public API
+
+"""
+    nschub(w; method=:auto)
+
+Count the number of monomials in the Schubert polynomial S_w.
+
+## Arguments
+- `w::Vector{Int}`: A permutation
+- `method::Symbol`: Algorithm to use. Options:
+  - `:auto` or `:transition` — transition DFS with bit-packed memoization (default)
+  - `:cotransition` — cotransition DFS with bit-packed memoization
+  - `:cotransition_bfs` — cotransition BFS (sort-reduce, no recursion)
+  - `:legacy` — original implementation using max_transition/vex_det
+
+## Returns
+`BigInt`: the number of monomials in the Schubert polynomial
+"""
+function nschub(w::Vector{Int}; method::Symbol=:auto)
+    w = trimw(w)
+    n = length(w)
+    n == 0 && return BigInt(1)
+
+    # Factor through cutw for disconnected permutations
+    ws = cutw(w)
+    if length(ws) > 1
+        return prod(nschub(wi; method=method) for wi in ws)
+    end
+
+    if method == :legacy
+        return nschub_legacy(w)
+    end
+
+    # Fall back to legacy for n > 25 (exceeds UInt128 packing)
+    if n > 25
+        return nschub_legacy(w)
+    end
+
+    if n <= 16
+        code = pack_perm64(w)
+        if method == :cotransition
+            return _nschub_cotrans(code, n, Dict{UInt64, BigInt}())
+        elseif method == :cotransition_bfs
+            return _nschub_cotrans_bfs(code, n)
+        else
+            return _nschub_transition(code, n, Dict{UInt64, BigInt}())
+        end
+    else
+        code = pack_perm128(w)
+        if method == :cotransition
+            return _nschub_cotrans(code, n, Dict{UInt128, BigInt}())
+        elseif method == :cotransition_bfs
+            return _nschub_cotrans_bfs(code, n)
+        else
+            return _nschub_transition(code, n, Dict{UInt128, BigInt}())
+        end
+    end
 end
 
 
