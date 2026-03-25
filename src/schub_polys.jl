@@ -272,6 +272,148 @@ end
 
 
 ######
+# CRT-based modular arithmetic versions
+# Run transition/cotransition mod a prime, storing UInt64 residues instead of BigInt
+
+# Large primes that fit in UInt64 (each ~63 bits, ~19 decimal digits)
+const _CRT_PRIMES = UInt64[
+    9223372036854775783,  # largest prime < 2^63
+    9223372036854775643,
+    9223372036854775549,
+    9223372036854775507,
+    9223372036854775433,
+    9223372036854775421,
+]
+
+"""
+Reconstruct a BigInt from residues mod the CRT primes using the Chinese Remainder Theorem.
+"""
+function _crt_reconstruct(residues::Vector{UInt64}, primes::Vector{UInt64})
+    # Standard CRT reconstruction
+    M = prod(BigInt.(primes))
+    result = BigInt(0)
+    for i in eachindex(primes)
+        p = BigInt(primes[i])
+        Mi = div(M, p)
+        # Compute modular inverse of Mi mod p using extended gcd
+        yi = invmod(Mi, p)
+        result += BigInt(residues[i]) * Mi * yi
+    end
+    return mod(result, M)
+end
+
+function _nschub_transition_mod(code::T, n::Int, cache::Dict{T, UInt64}, p::UInt64) where T <: PackedPerm
+    haskey(cache, code) && return cache[code]
+
+    r, s = find_transition_rs(code, n)
+    if r == 0
+        cache[code] = UInt64(1)
+        return UInt64(1)
+    end
+
+    v = swap_positions(code, r, s)
+    result = _nschub_transition_mod(v, n, cache, p)
+
+    vr = get_val(v, r)
+    for i in 1:r-1
+        if get_val(v, i) < vr && is_bruhat_cover_up(v, i, r)
+            wprime = swap_positions(v, i, r)
+            result = mod(result + _nschub_transition_mod(wprime, n, cache, p), p)
+        end
+    end
+
+    cache[code] = result
+    return result
+end
+
+function _nschub_cotrans_mod(code::T, n::Int, cache::Dict{T, UInt64}, p::UInt64) where T <: PackedPerm
+    haskey(cache, code) && return cache[code]
+
+    ci = find_cotrans_index(code, n)
+    if ci == 0
+        cache[code] = UInt64(1)
+        return UInt64(1)
+    end
+
+    pi_ci = get_val(code, ci)
+    result = UInt64(0)
+
+    for a in 1:n
+        for b in a+1:n
+            if is_bruhat_cover_up(code, a, b)
+                sigma_ci = ci == a ? get_val(code, b) : (ci == b ? get_val(code, a) : pi_ci)
+                if sigma_ci != pi_ci
+                    cover = swap_positions(code, a, b)
+                    result = mod(result + _nschub_cotrans_mod(cover, n, cache, p), p)
+                end
+            end
+        end
+    end
+
+    cache[code] = result
+    return result
+end
+
+function _nschub_cotrans_bfs_mod(code::T, n::Int, p::UInt64) where T <: PackedPerm
+    max_ell = n * (n - 1) ÷ 2
+    ell = perm_length(code, n)
+    ell == max_ell && return UInt64(1)
+
+    layer = Dict{T, UInt64}(code => UInt64(1))
+
+    for level in ell:max_ell-1
+        next = Dict{T, UInt64}()
+        for (pi_code, pi_val) in layer
+            ci = find_cotrans_index(pi_code, n)
+            ci == 0 && continue
+            pi_ci = get_val(pi_code, ci)
+            for a in 1:n
+                for b in a+1:n
+                    if is_bruhat_cover_up(pi_code, a, b)
+                        sigma_ci = ci == a ? get_val(pi_code, b) : (ci == b ? get_val(pi_code, a) : pi_ci)
+                        if sigma_ci != pi_ci
+                            sigma_code = swap_positions(pi_code, a, b)
+                            next[sigma_code] = mod(get(next, sigma_code, UInt64(0)) + pi_val, p)
+                        end
+                    end
+                end
+            end
+        end
+        layer = next
+    end
+
+    result = UInt64(0)
+    for v in values(layer)
+        result = mod(result + v, p)
+    end
+    return result
+end
+
+"""
+    _nschub_crt(w, n, code, method)
+
+Run the nschub computation using CRT: compute residues mod several large primes,
+then reconstruct the BigInt result. Uses ~6 primes for ~114 digits of range.
+"""
+function _nschub_crt(code::T, n::Int; method::Symbol=:transition) where T <: PackedPerm
+    primes = _CRT_PRIMES
+    residues = Vector{UInt64}(undef, length(primes))
+
+    for (idx, p) in enumerate(primes)
+        if method == :cotransition
+            residues[idx] = _nschub_cotrans_mod(code, n, Dict{T, UInt64}(), p)
+        elseif method == :cotransition_bfs
+            residues[idx] = _nschub_cotrans_bfs_mod(code, n, p)
+        else
+            residues[idx] = _nschub_transition_mod(code, n, Dict{T, UInt64}(), p)
+        end
+    end
+
+    return _crt_reconstruct(residues, primes)
+end
+
+
+######
 # Cotransition BFS (sort-reduce) for nschub (bit-packed)
 
 function _nschub_cotrans_bfs(code::T, n::Int) where T <: PackedPerm
@@ -320,7 +462,14 @@ Count the number of monomials in the Schubert polynomial S_w.
   - `:auto` or `:transition` — transition DFS with bit-packed memoization (default)
   - `:cotransition` — cotransition DFS with bit-packed memoization
   - `:cotransition_bfs` — cotransition BFS (sort-reduce, no recursion)
+  - `:crt` — transition DFS with CRT-based modular arithmetic (lower memory)
+  - `:crt_cotransition` — cotransition DFS with CRT-based modular arithmetic
+  - `:crt_cotransition_bfs` — cotransition BFS with CRT-based modular arithmetic
   - `:legacy` — original implementation using max_transition/vex_det
+
+The CRT methods store `UInt64` residues mod several large primes instead of `BigInt`,
+reducing memory usage. Results are reconstructed via Chinese Remainder Theorem,
+supporting values up to ~114 decimal digits.
 
 ## Returns
 `BigInt`: the number of monomials in the Schubert polynomial
@@ -343,6 +492,17 @@ function nschub(w::Vector{Int}; method::Symbol=:auto)
     # Fall back to legacy for n > 25 (exceeds UInt128 packing)
     if n > 25
         return nschub_legacy(w)
+    end
+
+    # CRT methods
+    if method in (:crt, :crt_cotransition, :crt_cotransition_bfs)
+        inner = method == :crt ? :transition :
+                method == :crt_cotransition ? :cotransition : :cotransition_bfs
+        if n <= 16
+            return _nschub_crt(pack_perm64(w), n; method=inner)
+        else
+            return _nschub_crt(pack_perm128(w), n; method=inner)
+        end
     end
 
     if n <= 16
