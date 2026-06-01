@@ -109,3 +109,18 @@ function xy_ring(n::Int)
 end
 
 
+"""
+    default_ring(n_x, double)
+
+Return the default `DoublePolyRing` for a polynomial constructor.
+
+When `double=false` a y-free ring in `n_x` x-variables is built (a *single*
+polynomial lives there); when `double=true` a ring with `n_x` x-variables and
+`n_x` y-variables is built, as needed for a double/factorial polynomial. The
+single helper used by every defaulted signature, so that the "single in any
+ring" default is encoded in one place.
+"""
+default_ring(n_x::Int, double::Bool) =
+    double ? xy_ring(n_x, n_x)[1] : xy_ring(n_x, 0)[1]
+
+

@@ -30,7 +30,7 @@ julia> back_schub_poly( [1,3,4,2], R )
 ```
 Here `ss[lambda]` stands for the dominant polynomial corresponding to a partition `lambda`.
 """
-function back_schub_poly(w, R::DoublePolyRing=xy_ring( max(length(w)-1,1))[1] )
+function back_schub_poly(w, R::DoublePolyRing=xy_ring( max(length(w)-1,1))[1]; double::Bool=false )
 
   w=trimw(w)
 
@@ -42,7 +42,7 @@ function back_schub_poly(w, R::DoublePolyRing=xy_ring( max(length(w)-1,1))[1] )
   for b in bpds
     la = dominant_part(b)
     if !(la in pars)
-      aa = acoeff(w,la,R)
+      aa = acoeff(w,la,R; double=double)
       push!(pars, la)
       push!(cfs, aa)
     end
@@ -54,7 +54,7 @@ end
 
 
 # get the coefficient of the (dominant) s[lambda] in the (back stable) Schubert polynomial S[w]
-function acoeff( w::Vector{Int}, lambda::Vector{Int}, R::DoublePolyRing=xy_ring(length(w)-1)[1] )
+function acoeff( w::Vector{Int}, lambda::Vector{Int}, R::DoublePolyRing=xy_ring(length(w)-1)[1]; double::Bool=false )
 
   lam = trimp(lambda)
 
@@ -63,18 +63,18 @@ function acoeff( w::Vector{Int}, lambda::Vector{Int}, R::DoublePolyRing=xy_ring(
 
   for b in all_bpds(w)
     if dominant_part(b)==lam
-      apol = apol + bpd2bin_star( b, R )
+      apol = apol + bpd2bin_star( b, R; double=double )
     end
-  end     
+  end
 
   return apol
 end
 
 
-function bpd2bin_star( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.mtx)[1]-1, size(bpd.mtx)[2]-1 )[1] )
+function bpd2bin_star( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.mtx)[1]-1, size(bpd.mtx)[2]-1 )[1]; double::Bool=false )
 # product of binomials for bpd
 # only schub version now
-# can get single polyn by using no y_vars
+# `double=false` (default) ignores any y-variables, giving the single polynomial
   local n=size(bpd.mtx)[1]-1
   bin = R.ring(1)
 
@@ -82,7 +82,7 @@ function bpd2bin_star( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.mtx)[1]-1, 
   y = R.y_vars
 
   local aa=length(x)
-  local bb=length(y)
+  local bb= double ? length(y) : 0
 
   la = dominant_part(bpd)
   la = vcat( la, zeros(Int, n-length(la)) )

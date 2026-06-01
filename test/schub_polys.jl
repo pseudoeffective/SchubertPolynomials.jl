@@ -31,4 +31,32 @@ w=[1,4,3,2,10,9,8,7,6,5];
 w=[1,3,2,8,7,6,5,4];
 @test ngroth(w)==1711251
 
+
+# --- `double` keyword (Step A) ---
+
+w = [2,1,4,3]
+Rxy = xy_ring(3,3)[1]   # ring carrying y-variables
+
+# double=false: single polynomial, even though the ring has y-variables (new capability)
+p_single = schub_poly(w, Rxy; double=false)
+@test p_single == schub_poly(w, Rxy; double=false, method="bpd")
+@test p_single == schub_poly(w, Rxy; double=false, method="transition")
+@test p_single == schub_poly(w, Rxy; double=false, method="dd")
+# the y-variables of the ring are genuinely unused
+@test all( v -> !startswith(string(v), "y"), vars(p_single) )
+
+# double=true: factorial polynomial in x and y, methods agree
+p_double = schub_poly(w, Rxy; double=true)
+@test p_double == schub_poly(w, Rxy; double=true, method="bpd")
+@test p_double == schub_poly(w, Rxy; double=true, method="transition")
+@test p_double != p_single
+@test any( v -> startswith(string(v), "y"), vars(p_double) )
+
+# double=true on a y-free ring is an error
+@test_throws ArgumentError schub_poly(w, xy_ring(3,0)[1]; double=true)
+@test_throws ArgumentError groth_poly(w, xy_ring(3,0)[1]; double=true)
+
+# no ring supplied: double=true builds a ring with y-variables on its own
+@test any( v -> startswith(string(v), "y"), vars( schub_poly(w; double=true) ) )
+
 end

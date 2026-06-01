@@ -14,7 +14,8 @@ Return the Schubert polynomial for the permutation `w`
 
 ## Arguments
 - `w::Vector{Int}`: A permutation
-- `R::DoublePolyRing`: The ambient polynomial ring, with underlying ring `R.ring` and variables `R.x_vars` and `R.y_vars`
+- `R::DoublePolyRing`: The ambient polynomial ring, with underlying ring `R.ring` and variables `R.x_vars` and `R.y_vars`.  Optional; if omitted, a ring is chosen based on `double`.
+- `double::Bool`: An optional keyword (default `false`).  When `false`, the single Schubert polynomial is returned, using only the x-variables of `R` (any y-variables are ignored).  When `true`, the double/factorial Schubert polynomial is returned; `R` must then have y-variables.
 - `method`: An optional argument specifying the algorithm for computing.
 - `memo`: An optional argument for memoization (default=false)
 
@@ -68,34 +69,41 @@ julia> pol3==pol4
 true
 ```
 """
-function schub_poly(w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1) )[1]; method="auto", memo::Bool=false )
+# no ring supplied: choose a default ring based on `double`
+function schub_poly(w::Vector{Int}; double::Bool=false, method="auto", memo::Bool=false )
+  return schub_poly(w, default_ring( max(length(w)-1,1), double ); double=double, method=method, memo=memo )
+end
+
+function schub_poly(w::Vector{Int}, R::DoublePolyRing; double::Bool=false, method="auto", memo::Bool=false )
+
+  double && length(R.y_vars)==0 && throw(ArgumentError("double=true requires a ring with y-variables; got a y-free ring"))
 
   w=trimw(w)
   ws = cutw(w)
 
   if length(ws)>1
-    return( schub_poly(ws[1], R; method=method, memo=memo )*schub_poly(ws[2], R; method=method, memo=memo ) ) 
+    return( schub_poly(ws[1], R; double=double, method=method, memo=memo )*schub_poly(ws[2], R; double=double, method=method, memo=memo ) )
   end
 
   if memo
-    return schub_trans_memo(w,R)
+    return schub_trans_memo(w,R; double=double)
   end
 
   if method=="dd"
-    return schub_dd(w,R)
+    return schub_dd(w,R; double=double)
   elseif method=="bpd"
-    return schub_bpd(w,R)
+    return schub_bpd(w,R; double=double)
   elseif method=="drift"
-    return schub_drifts(w,R)
+    return schub_drifts(w,R; double=double)
   elseif method=="transition"
-    return schub_trans(w,R)
+    return schub_trans(w,R; double=double)
   end
 
-  if length(R.y_vars)>0 || len(w)<.3*length(w)^2
-    return schub_trans(w,R)
+  if double || len(w)<.3*length(w)^2
+    return schub_trans(w,R; double=double)
   end
 
-  return schub_dd(w,R)
+  return schub_dd(w,R; double=double)
 
 end
 
@@ -107,7 +115,8 @@ Return the Grothendieck polynomial for the permutation `w`
 
 ## Arguments
 - `w::Vector{Int}`: A permutation
-- `R::DoublePolyRing`: The ambient polynomial ring, with underlying ring `R.ring` and variables `R.x_vars` and `R.y_vars`
+- `R::DoublePolyRing`: The ambient polynomial ring, with underlying ring `R.ring` and variables `R.x_vars` and `R.y_vars`.  Optional; if omitted, a ring is chosen based on `double`.
+- `double::Bool`: An optional keyword (default `false`).  When `false`, the single Grothendieck polynomial is returned, using only the x-variables of `R`.  When `true`, the double Grothendieck polynomial is returned; `R` must then have y-variables.
 - `method`: An optional argument specifying the algorithm for computing.
 
 The options for `method` are:
@@ -147,15 +156,22 @@ julia> pol3==pol4
 true
 ```
 """
-function groth_poly(w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), 0 )[1]; method="dd" )
+# no ring supplied: choose a default ring based on `double`
+function groth_poly(w::Vector{Int}; double::Bool=false, method="dd" )
+  return groth_poly(w, default_ring( max(length(w)-1,1), double ); double=double, method=method )
+end
+
+function groth_poly(w::Vector{Int}, R::DoublePolyRing; double::Bool=false, method="dd" )
+
+  double && length(R.y_vars)==0 && throw(ArgumentError("double=true requires a ring with y-variables; got a y-free ring"))
 
   if method=="dd"
-    return groth_dd(w,R)
+    return groth_dd(w,R; double=double)
   elseif method=="drift"
-    return groth_drifts(w,R)
+    return groth_drifts(w,R; double=double)
   end
 
-  return groth_bpd(w,R)
+  return groth_bpd(w,R; double=double)
 
 end
 
@@ -225,10 +241,10 @@ end
 ######
 
 
-function bpd2bin( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.mtx)[1]-1, size(bpd.mtx)[2]-1 )[1]; version="schub"  )
+function bpd2bin( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.mtx)[1]-1, size(bpd.mtx)[2]-1 )[1]; version="schub", double::Bool=false  )
 # product of binomials for bpd
 # requires DoublePolyRing
-# can get single polyn by using no y_vars
+# `double=false` (default) ignores any y-variables, giving the single polynomial
   local n=size(bpd.mtx)[1]-1
   bin = R.ring(1)
 
@@ -236,7 +252,7 @@ function bpd2bin( bpd::BPD, R::DoublePolyRing=xy_ring( size(bpd.mtx)[1]-1, size(
   y = R.y_vars
 
   local aa=length(x)
-  local bb=length(y)
+  local bb= double ? length(y) : 0
 
   for i=1:n
     for j=1:n
@@ -281,14 +297,14 @@ end
 
 
 
-function schub_bpd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]  )
+function schub_bpd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]; double::Bool=false  )
 # compute schubert pol by bpd formula
   bpds=all_bpds(w)
 
   pol=R.ring(0)
 
   for bp in bpds
-    pol = pol+bpd2bin(bp,R)
+    pol = pol+bpd2bin(bp,R; double=double)
   end
 
   return(pol)
@@ -297,14 +313,14 @@ end
 
 
 
-#@memoize 
-function schub_trans( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+#@memoize
+function schub_trans( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]; double::Bool=false )
 # compute schubert pol by transition formula
 
   mxt = max_transition(w)
 
   if length(mxt)==0
-    return schub_drifts(w,R)
+    return schub_drifts(w,R; double=double)
   end
 
   (r,s) = mxt[1]
@@ -314,7 +330,7 @@ function schub_trans( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1
   x = R.x_vars
   y = R.y_vars
 
-  pv = schub_trans(vv, R)
+  pv = schub_trans(vv, R; double=double)
 
   p1 = R.ring(0)
 
@@ -322,14 +338,14 @@ function schub_trans( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1
     p1 = p1+x[r]
   end
 
-  if w[s]<=length(y)
+  if double && w[s]<=length(y)
     p1 = p1 + y[w[s]]
   end
 
   p1 = p1*pv
 
   for ww in wws
-    pw = schub_trans(ww,R)
+    pw = schub_trans(ww,R; double=double)
     p1 = p1+pw
   end
 
@@ -337,13 +353,13 @@ function schub_trans( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1
 
 end
 
-@memoize function schub_trans_memo( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+@memoize function schub_trans_memo( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]; double::Bool=false )
 # compute schubert pol by transition formula, memoized
 
   mxt = max_transition(w)
 
   if length(mxt)==0
-    return schub_drifts(w,R)
+    return schub_drifts(w,R; double=double)
   end
 
   (r,s) = mxt[1]
@@ -353,7 +369,7 @@ end
   x = R.x_vars
   y = R.y_vars
 
-  pv = schub_trans_memo(vv, R)
+  pv = schub_trans_memo(vv, R; double=double)
 
   p1 = R.ring(0)
 
@@ -361,14 +377,14 @@ end
     p1 = p1+x[r]
   end
 
-  if w[s]<=length(y)
+  if double && w[s]<=length(y)
     p1 = p1 + y[w[s]]
   end
 
   p1 = p1*pv
 
   for ww in wws
-    pw = schub_trans_memo(ww,R)
+    pw = schub_trans_memo(ww,R; double=double)
     p1 = p1+pw
   end
 
@@ -377,7 +393,7 @@ end
 end
 
 
-function schub_dd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+function schub_dd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]; double::Bool=false )
 # compute schubert pol by divided differences
 
   w=trimw(w)
@@ -398,12 +414,12 @@ function schub_dd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1)
   end
 
   if i==0
-    return sp0( n, R )
+    return sp0( n, R; double=double )
   end
 
   w = vcat( w[1:i-1], w[i+1], w[i], w[i+2:n] )
 
-  pol1 = schub_dd( w, R )
+  pol1 = schub_dd( w, R; double=double )
 
   return ddx( pol1, i, R )
 
@@ -411,14 +427,14 @@ end
 
 
 
-function groth_bpd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]  )
+function groth_bpd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]; double::Bool=false  )
 # compute grothendieck pol by bpd formula
   bpds=all_Kbpds(w)
 
   pol=R.ring(0)
 
   for bp in bpds
-    pol = pol+bpd2bin(bp,R, version="groth")
+    pol = pol+bpd2bin(bp,R; version="groth", double=double)
   end
 
   return((-1)^len(w)*pol)
@@ -426,7 +442,7 @@ function groth_bpd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1
 end
 
 
-@memoize function groth_dd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+@memoize function groth_dd( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]; double::Bool=false )
 # compute grothendieck pol by divided differences
 
   n=length(w)
@@ -449,12 +465,12 @@ end
   end
 
   if i==0
-    return gp0( n, R )
+    return gp0( n, R; double=double )
   end
 
   w = vcat( w[1:i-1], w[i+1], w[i], w[i+2:n] )
 
-  pol1 = groth_dd( w, R )
+  pol1 = groth_dd( w, R; double=double )
 
   return pdx( pol1, i, R )
 
@@ -466,13 +482,13 @@ end
 
 #############
 
-function sp0( n::Int, R::DoublePolyRing=xy_ring( n-1, n-1 )[1] )
+function sp0( n::Int, R::DoublePolyRing=xy_ring( n-1, n-1 )[1]; double::Bool=false )
 
   x=R.x_vars
   y=R.y_vars
 
   aa=length(x)
-  bb=length(y)
+  bb= double ? length(y) : 0
 
   pol=1
 
@@ -490,13 +506,13 @@ function sp0( n::Int, R::DoublePolyRing=xy_ring( n-1, n-1 )[1] )
 end
 
 
-function gp0( n::Int, R::DoublePolyRing=xy_ring( n-1, n-1 )[1] )
+function gp0( n::Int, R::DoublePolyRing=xy_ring( n-1, n-1 )[1]; double::Bool=false )
 
   x=R.x_vars
   y=R.y_vars
 
   aa=length(x)
-  bb=length(y)
+  bb= double ? length(y) : 0
 
   pol=1
 

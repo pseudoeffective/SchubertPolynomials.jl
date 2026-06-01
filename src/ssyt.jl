@@ -337,12 +337,12 @@ x1^2*x2 + x1^2*x3 + x1*x2^2 + 2*x1*x2*x3 + x1*x3^2 + x2^2*x3 + x2*x3^2
 
 ```
 """
-function schur_poly( la, ff::Vector{Vector{Int}}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
+function schur_poly( la, ff::Vector{Vector{Int}}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; double::Bool=length(RR.y_vars)>0, mu = Int[], xoffset=0, yoffset=0, rowmin=false )
   if length(la)==0
     return RR.ring(1)
   end
 
-  if length(RR.y_vars)==0
+  if !double
      return schur_polynomial1_combinat( la, ff, RR, mu=mu, xoffset=xoffset, rowmin=rowmin )
   end
 
@@ -355,22 +355,22 @@ function schur_poly( la, ff::Vector{Vector{Int}}, RR::DoublePolyRing=xy_ring( le
 end
 
 ###
-function schur_poly( la, ff::Vector{Int}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
+function schur_poly( la, ff::Vector{Int}, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; double::Bool=length(RR.y_vars)>0, mu = Int[], xoffset=0, yoffset=0, rowmin=false )
   if length(la)==0
     return RR.ring(1)
   end
 
-  return schur_poly( la, Vector{Vector{Int}}([fill(ff[i],la[i]) for i=1:length(la)]), RR; mu = mu, xoffset=xoffset, yoffset=yoffset, rowmin=rowmin )
+  return schur_poly( la, Vector{Vector{Int}}([fill(ff[i],la[i]) for i=1:length(la)]), RR; double=double, mu = mu, xoffset=xoffset, yoffset=yoffset, rowmin=rowmin )
 
 end
 
 ###
-function schur_poly( la, ff::Int, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; mu = Int[], xoffset=0, yoffset=0, rowmin=false )
+function schur_poly( la, ff::Int, RR::DoublePolyRing=xy_ring( length(la) , length(la)+la[1] )[1]; double::Bool=length(RR.y_vars)>0, mu = Int[], xoffset=0, yoffset=0, rowmin=false )
   if length(la)==0
     return RR.ring(1)
   end
 
-  return schur_poly( la, Vector{Int}(fill(ff,length(la))), RR; mu = mu, xoffset=xoffset, yoffset=yoffset, rowmin=rowmin )
+  return schur_poly( la, Vector{Int}(fill(ff,length(la))), RR; double=double, mu = mu, xoffset=xoffset, yoffset=yoffset, rowmin=rowmin )
 end
 
 
@@ -396,7 +396,9 @@ function schur_polynomial1_combinat(lambda::Vector{Int}, ff::Vector{Vector{Int}}
   mu = vcat(mu, [0 for s=length(mu)+1:len])  # extend mu by 0 if necessary
 
 
-  count = zeros(Int,length(xx))
+  # exponent vectors must span every variable of R.ring (the ring may carry
+  # y-variables we are ignoring for the single polynomial); x are the first gens
+  count = zeros(Int, nvars(R.ring))
   valid = true
   while true
     count .= 0

@@ -39,22 +39,22 @@ julia> mult_2schub( [2,3,1], [3,1,2], 4, R )
 (y1 - y3)*S[3, 2, 1] + S[4, 2, 1, 3]
 ```
 """
-function mult_2schub( uu::Vector{Int}, vv::Vector{Int}, rnk::Int=maximum([length(uu),length(vv)]), R::DoublePolyRing=xy_ring(rnk-1)[1] )
+function mult_2schub( uu::Vector{Int}, vv::Vector{Int}, rnk::Int=maximum([length(uu),length(vv)]), R::DoublePolyRing=xy_ring(rnk-1)[1]; double::Bool=false )
 
-  len(uu)>len(vv) && return mult_2schub( vv, uu, rnk, R )
+  len(uu)>len(vv) && return mult_2schub( vv, uu, rnk, R; double=double )
 
-  f = schub_poly(uu,R)
+  f = schub_poly(uu,R; double=double)
 
-  return mult_schub( f, vv, rnk, R )
+  return mult_schub( f, vv, rnk, R; double=double )
 
 end
 
 
 
 # get the schubert structure constant, default non-equivariant
-function lrc( uu::Vector{Int}, vv::Vector{Int}, ww::Vector{Int}, rnk::Int=maximum([length(uu),length(vv),length(ww)]), R::DoublePolyRing=xy_ring(rnk-1)[1] )
+function lrc( uu::Vector{Int}, vv::Vector{Int}, ww::Vector{Int}, rnk::Int=maximum([length(uu),length(vv),length(ww)]), R::DoublePolyRing=xy_ring(rnk-1)[1]; double::Bool=false )
 
-  ss = mult_2schub( uu, vv, rnk, R )
+  ss = mult_2schub( uu, vv, rnk, R; double=double )
 
   return coeff( ss, ww )
 
@@ -63,7 +63,7 @@ end
 
 
 # multiply a polynomial by a schubert sum, default non-equivariant
-function mult_schub(f::Union{Int,ZZMPolyRingElem}, ss::SchubertSum, rnk::Int=maximum( length.(ss.schubs) ), R::Union{ZZMPolyRing,DoublePolyRing}=xy_ring(rnk-1)[1] )
+function mult_schub(f::Union{Int,ZZMPolyRingElem}, ss::SchubertSum, rnk::Int=maximum( length.(ss.schubs) ), R::Union{ZZMPolyRing,DoublePolyRing}=xy_ring(rnk-1)[1]; double::Bool=false )
 
   i = maxvar(f)
   cfs = copy(ss.coeffs)
@@ -86,28 +86,28 @@ function mult_schub(f::Union{Int,ZZMPolyRingElem}, ss::SchubertSum, rnk::Int=max
 
   f2 = divrem( f-f1, xx[ii] )[1]
 
-  ss1 = mult_schub( f1, ss, rnk, R )  # maxvar less than i
+  ss1 = mult_schub( f1, ss, rnk, R; double=double )  # maxvar less than i
 
-  ss2 = mult_schub( f2, ss, rnk, R )  # lower degree in xi
+  ss2 = mult_schub( f2, ss, rnk, R; double=double )  # lower degree in xi
 
-  ssmk = monk(ss2,i,rnk,R) # put the xi back in
+  ssmk = monk(ss2,i,rnk,R; double=double) # put the xi back in
 
   return condense( ss1+ssmk )
 
 end
 
 # to multiply by a single w, default non-equivariant
-function mult_schub(f::Union{Int,ZZMPolyRingElem}, w::Vector{Int}, rnk::Int=length(w), R::Union{ZZMPolyRing,DoublePolyRing}=xy_ring(rnk-1)[1] )
+function mult_schub(f::Union{Int,ZZMPolyRingElem}, w::Vector{Int}, rnk::Int=length(w), R::Union{ZZMPolyRing,DoublePolyRing}=xy_ring(rnk-1)[1]; double::Bool=false )
   ss = SchubertSum(w)
-  return mult_schub(f,ss,rnk,R)
+  return mult_schub(f,ss,rnk,R; double=double)
 end
 
 
 
 # expand a polynomial in Schubert basis, default non-equivariant
-function expand_schub( f::Union{Int,ZZMPolyRingElem}, rnk::Int=maxvar( f ), R::Union{ZZMPolyRing,DoublePolyRing}=parent(f) )
+function expand_schub( f::Union{Int,ZZMPolyRingElem}, rnk::Int=maxvar( f ), R::Union{ZZMPolyRing,DoublePolyRing}=parent(f); double::Bool=false )
 
-  return mult_schub( f, [1], rnk, R )
+  return mult_schub( f, [1], rnk, R; double=double )
 
 end
 
@@ -138,7 +138,7 @@ function maxvar(f::Int)
 end
 
 
-function monk(ss::SchubertSum, i::Int, rnk::Int, R::Union{DoublePolyRing,ZZMPolyRing}=xy_ring(rnk)[1])
+function monk(ss::SchubertSum, i::Int, rnk::Int, R::Union{DoublePolyRing,ZZMPolyRing}=xy_ring(rnk)[1]; double::Bool=false)
 
   if i>rnk || i<0
     return(ss)
@@ -146,7 +146,7 @@ function monk(ss::SchubertSum, i::Int, rnk::Int, R::Union{DoublePolyRing,ZZMPoly
 
   ll = length(ss)
 
-  if isa(R, DoublePolyRing)
+  if double && isa(R, DoublePolyRing)
     yy = R.y_vars
   else
     yy = Int[]

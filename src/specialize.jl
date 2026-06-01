@@ -9,12 +9,12 @@ export localization, principal_specialization
 #########
 
 
-function localization( u::Vector{Int}, v::Vector{Int}, R::DoublePolyRing=xy_ring( length(v),length(v) )[1] )
+function localization( u::Vector{Int}, v::Vector{Int}, R::DoublePolyRing=xy_ring( length(v),length(v) )[1]; double::Bool=true )
 # localize Schubert class u at fixed point v
   x=R.x_vars
   y=R.y_vars
 
-  uu=trimw(u) 
+  uu=trimw(u)
   vv=trimw(v)
 
   if length(x)<length(vv) || length(y)<length(vv)
@@ -27,7 +27,7 @@ function localization( u::Vector{Int}, v::Vector{Int}, R::DoublePolyRing=xy_ring
 
   yv = [ -y[vi] for vi in vv ]
 
-  sp = schub_poly(uu,R)
+  sp = schub_poly(uu,R; double=double)
 
   spv = evaluate( sp, x[1:length(vv)], yv )
 
@@ -57,14 +57,14 @@ function principal_specialization( pol::ZZMPolyRingElem, R::Union{ZZMPolyRing,Do
 end
 
 
-function principal_specialization( w::Vector{Int}, R::DoublePolyRing=xy_ring(length(w)-1)[1] )
+function principal_specialization( w::Vector{Int}, R::DoublePolyRing=xy_ring(length(w)-1)[1]; double::Bool=false )
 # return principal specialization of Schubert polynomial for w
 
   if length(R.y_vars)>0
     throw(ArgumentError("no y variables allowed"))
   end
 
-  spw = schub_poly( w, R )
+  spw = schub_poly( w, R; double=double )
 
   spq = principal_specialization( spw, R )
 

@@ -24,6 +24,9 @@ p = schur_poly(la,ff,R)
 
 @test p == x[1]^2*x[2] + x[1]^2*y[1] + x[1]*x[2]^2 + 2*x[1]*x[2]*y[1] + x[1]*x[2]*y[2] + x[1]*y[1]^2 + x[1]*y[1]*y[2] + x[2]^2*y[1] + x[2]*y[1]^2 + x[2]*y[1]*y[2] + y[1]^2*y[2]
 
+# `double` keyword: single Schur polynomial in a ring that carries y-variables
+@test schur_poly(la,ff,R; double=false) == x[1]^2*x[2] + x[1]*x[2]^2
+
 la = [3,2,1]
 ff = [2,4,5]
 R = xy_ring(5)[1]
