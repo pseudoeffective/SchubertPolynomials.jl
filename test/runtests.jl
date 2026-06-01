@@ -9,8 +9,8 @@ if isempty(ARGS)
         "permtools.jl", 
         "double_poly_ring.jl", 
         "ssyt.jl",
-       # "bpds.jl", 
-        "drifts.jl",
+       # "bpds.jl",
+       # drift methods moved to DriftPolynomials.jl
         "schub_polys.jl",
         "schubert_sum.jl",
         "mult_schub.jl"

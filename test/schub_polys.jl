@@ -12,7 +12,7 @@ q = groth_poly(w,R)
 w = [1,4,2,3,7,6,5]
 R=xy_ring(6,6)[1]
 p1=schub_poly(w,R,method="bpd");
-p2=schub_poly(w,R,method="drift");
+p2=schub_poly(w,R,method="drift");   # :drift is deprecated and now aliased to :bpd
 p3=schub_poly(w,R,method="transition");
 
 @test p1==p2
@@ -58,5 +58,21 @@ p_double = schub_poly(w, Rxy; double=true)
 
 # no ring supplied: double=true builds a ring with y-variables on its own
 @test any( v -> startswith(string(v), "y"), vars( schub_poly(w; double=true) ) )
+
+
+# --- dominant permutations: transition base case is drift-free (Step C2) ---
+# For a dominant w, max_transition(w) is empty, so :transition falls back to the
+# single flat (Rothe) BPD; this must agree with :bpd in both single and double.
+
+for wd in ( [3,2,1], [1,3,4,2] )
+  Rd = xy_ring(4,4)[1]
+  @test schub_poly(wd, Rd; double=false, method="transition") ==
+        schub_poly(wd, Rd; double=false, method="bpd")
+  @test schub_poly(wd, Rd; double=true,  method="transition") ==
+        schub_poly(wd, Rd; double=true,  method="bpd")
+  # memoized transition path hits the same fallback
+  @test schub_poly(wd, Rd; double=true, memo=true) ==
+        schub_poly(wd, Rd; double=true, method="bpd")
+end
 
 end

@@ -21,10 +21,10 @@ Return the Schubert polynomial for the permutation `w`
 
 The options for `method` are:
 - `method="transition"`, computes via transition formula
-- `method="drift"`, computes from flat BPDs by drift class formula
 - `method="bpd"`, computes by summing over all BPDs
-- `method="dd"`, computes by divided differences from longest permutation 
-- `method="auto" (default), computes by transition if there are y variables, or if w has relatively small length, otherwise computes by divided difference
+- `method="dd"`, computes by divided differences from longest permutation
+- `method="auto" (default), computes by transition if `double` is requested, or if w has relatively small length, otherwise computes by divided difference
+- `method="drift"` (deprecated), now aliased to `"bpd"`; drift methods have moved to DriftPolynomials.jl
 
 ## Returns
 `ZZMPolyRingElem`: the Schubert polynomial in the ring R
@@ -56,14 +56,14 @@ ERROR: ArgumentError: Not enough x variables for this method
 
 ```
 
-### If R is not specified, a double polynomial ring containing the single Schubert polynomial is chosen
+### If R is not specified, a ring containing the single Schubert polynomial is chosen
 
 ```julia-repl
 julia> pol3 = schub_poly(w, method="bpd");
 
 julia> R,x,y = xy_ring(4,0);
 
-julia> pol4 = schub_poly(w, R, method="drift");
+julia> pol4 = schub_poly(w, R, method="transition");
 
 julia> pol3==pol4
 true
@@ -94,7 +94,8 @@ function schub_poly(w::Vector{Int}, R::DoublePolyRing; double::Bool=false, metho
   elseif method=="bpd"
     return schub_bpd(w,R; double=double)
   elseif method=="drift"
-    return schub_drifts(w,R; double=double)
+    Base.depwarn("the \"drift\" method is deprecated and now computes via \"bpd\"; drift methods have moved to DriftPolynomials.jl", :schub_poly)
+    return schub_bpd(w,R; double=double)
   elseif method=="transition"
     return schub_trans(w,R; double=double)
   end
@@ -168,7 +169,8 @@ function groth_poly(w::Vector{Int}, R::DoublePolyRing; double::Bool=false, metho
   if method=="dd"
     return groth_dd(w,R; double=double)
   elseif method=="drift"
-    return groth_drifts(w,R; double=double)
+    Base.depwarn("the \"drift\" method is deprecated and now computes via \"bpd\"; drift methods have moved to DriftPolynomials.jl", :groth_poly)
+    return groth_bpd(w,R; double=double)
   end
 
   return groth_bpd(w,R; double=double)
@@ -177,7 +179,6 @@ end
 
 
 ## TO DO: add "transition" method for groth_poly
-## TO DO: figure out "drift" method for groth_poly
 
 
 ######
@@ -320,7 +321,10 @@ function schub_trans( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1
   mxt = max_transition(w)
 
   if length(mxt)==0
-    return schub_drifts(w,R; double=double)
+    # max_transition is empty exactly for dominant permutations, whose Schubert
+    # polynomial is the single flat (Rothe) BPD; sum over BPDs gives the answer
+    # directly, with no need for the (removed) drift machinery.
+    return schub_bpd(w,R; double=double)
   end
 
   (r,s) = mxt[1]
@@ -359,7 +363,10 @@ end
   mxt = max_transition(w)
 
   if length(mxt)==0
-    return schub_drifts(w,R; double=double)
+    # max_transition is empty exactly for dominant permutations, whose Schubert
+    # polynomial is the single flat (Rothe) BPD; sum over BPDs gives the answer
+    # directly, with no need for the (removed) drift machinery.
+    return schub_bpd(w,R; double=double)
   end
 
   (r,s) = mxt[1]
@@ -618,26 +625,3 @@ function vex_det( la::Vector{Int}, ff::Vector{Int} )
   return det(A)
 
 end
-
-
-
-
-#=
-# temporary alternative, not used
-function schub_2drifts( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
-# compute schubert pol by drift class formula
-
-  fbpds = flat_bpds(w)
-
-  pol = R.ring(0)
-
-  for b in fbpds
-    d=bpd2drift(b)
-    pol = pol+drift_poly(d,R)
-  end
-
-  return pol
-
-end
-
-=#

@@ -77,8 +77,11 @@ include("permutations.jl") # meant to replace `permtools.jl`, missing some funct
 include("ssyt.jl") # must be included after `double_poly_ring.jl`
 include("pds.jl") # must be included after `permutations.jl`
 #include("bpds.jl")
-include("drifts.jl")
-include("drift_polys.jl") # must be included after `drifts.jl`
+# Drift methods have moved to DriftPolynomials.jl.  The drift source files are
+# kept for one version but no longer included; `compat.jl` provides migration
+# shims for the names that used to live here.
+#include("drifts.jl")
+#include("drift_polys.jl") # must be included after `drifts.jl`
 #include("draw_bpds.jl") # must be included after `bpds.jl` & `drifts.jl`
 include("schub_polys.jl")
 include("schubert_sum.jl")
@@ -88,5 +91,7 @@ include("dominant_sum.jl")
 include("back_stable.jl")
 
 include("specialize.jl")
+
+include("compat.jl")
 
 end
