@@ -51,18 +51,30 @@ import Printf:
 # bpds
 using BumplessPipeDreams
 
+# Tableaux and Schur polynomials live in SemistandardTableaux now; import the
+# names we re-export selectively (a blanket `using` would clash on `xy_ring`,
+# `ZZ`, `QQ`, `schur_poly`, etc. — see the deprecation shims those packages keep).
+import SemistandardTableaux
+import SemistandardTableaux:
+	Tableau, ssyt, ssyt_iterator, schur_poly, rsk, rsk_insert,
+	edelman_greene, edelman_greene_insert
+
 ################################################################################
 # Export (more exports are in the source files)
 ################################################################################
 
 export
 	ZZ, QQ, PolyRing, ZZMPolyRing, ZZMPolyRingElem, QQMPolyRing, QQMPolyRingElem,
-	
+
 	base_ring, polynomial_ring, gen, gens, nvars, vars, coefficients, evaluate,
 
-	BPD, all_bpds, all_Kbpds, flat_bpds, Rothe, is_asm, bpd2asm, asm2bpd, bpd2word, 
-	
-	bpd2perm, isreduced, isflat
+	BPD, all_bpds, all_Kbpds, flat_bpds, Rothe, is_asm, bpd2asm, asm2bpd, bpd2word,
+
+	bpd2perm, isreduced, isflat,
+
+	# re-exported from SemistandardTableaux
+	Tableau, ssyt, ssyt_iterator, schur_poly, rsk, rsk_insert,
+	edelman_greene, edelman_greene_insert
 
 
 
@@ -74,7 +86,9 @@ include("subsets.jl")
 include("double_poly_ring.jl")
 include("permtools.jl")
 include("permutations.jl") # meant to replace `permtools.jl`, missing some functionality; must be included after `subsets.jl`
-include("ssyt.jl") # must be included after `double_poly_ring.jl`
+# Tableaux/Schur moved to SemistandardTableaux.jl (imported above); ssyt.jl is
+# kept on disk for one version but no longer included.
+#include("ssyt.jl") # must be included after `double_poly_ring.jl`
 include("pds.jl") # must be included after `permutations.jl`
 #include("bpds.jl")
 # Drift methods have moved to DriftPolynomials.jl.  The drift source files are
