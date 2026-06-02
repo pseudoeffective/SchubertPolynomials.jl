@@ -9,10 +9,11 @@ export localization, principal_specialization
 #########
 
 
-function localization( u::Vector{Int}, v::Vector{Int}, R::DoublePolyRing=xy_ring( length(v),length(v) )[1]; double::Bool=true )
+function localization( u::Vector{Int}, v::Vector{Int};
+                       double::Bool=true, ring::MPolyRing=schub_ring( length(v), length(v) ) )
 # localize Schubert class u at fixed point v
-  x=R.x_vars
-  y=R.y_vars
+  x=extract_vars(ring; varname=:x)
+  y=extract_vars(ring; varname=:y)
 
   uu=trimw(u)
   vv=trimw(v)
@@ -27,7 +28,7 @@ function localization( u::Vector{Int}, v::Vector{Int}, R::DoublePolyRing=xy_ring
 
   yv = [ -y[vi] for vi in vv ]
 
-  sp = schub_poly(uu,R; double=double)
+  sp = schub_poly(uu; ring=ring, double=double)
 
   spv = evaluate( sp, x[1:length(vv)], yv )
 
@@ -36,15 +37,10 @@ function localization( u::Vector{Int}, v::Vector{Int}, R::DoublePolyRing=xy_ring
 end
 
 
-function principal_specialization( pol::ZZMPolyRingElem, R::Union{ZZMPolyRing,DoublePolyRing}=parent(pol) )
+function principal_specialization( pol::ZZMPolyRingElem; ring::MPolyRing=parent(pol) )
 
-   if isa(R,DoublePolyRing)
-     RR = R.ring
-     xx = R.x_vars
-   else
-     RR = R
-     xx = gens(R)
-   end
+   RR = ring
+   xx = extract_vars(ring; varname=:x)
 
    S,qq = polynomial_ring(RR,[:q])
 
@@ -57,16 +53,17 @@ function principal_specialization( pol::ZZMPolyRingElem, R::Union{ZZMPolyRing,Do
 end
 
 
-function principal_specialization( w::Vector{Int}, R::DoublePolyRing=xy_ring(length(w)-1)[1]; double::Bool=false )
+function principal_specialization( w::Vector{Int}; double::Bool=false,
+                                   ring::MPolyRing=schub_ring(length(w)-1, 0) )
 # return principal specialization of Schubert polynomial for w
 
-  if length(R.y_vars)>0
+  if length(extract_vars(ring; varname=:y))>0
     throw(ArgumentError("no y variables allowed"))
   end
 
-  spw = schub_poly( w, R; double=double )
+  spw = schub_poly( w; ring=ring, double=double )
 
-  spq = principal_specialization( spw, R )
+  spq = principal_specialization( spw; ring=ring )
 
   return spq
 

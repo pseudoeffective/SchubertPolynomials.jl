@@ -23,7 +23,7 @@ import Combinatorics:
 
 # AbstractAlgebra
 import AbstractAlgebra:
-	base_ring, gen, gens, parent_type, nvars, polynomial_ring, MPolyBuildCtx, push_term!, finish
+	base_ring, gen, gens, parent_type, nvars, polynomial_ring, MPolyBuildCtx, push_term!, finish, MPolyRing
 
 # Nemo
 import Nemo:
@@ -57,7 +57,7 @@ using BumplessPipeDreams
 import SemistandardTableaux
 import SemistandardTableaux:
 	Tableau, ssyt, ssyt_iterator, schur_poly, rsk, rsk_insert,
-	edelman_greene, edelman_greene_insert
+	edelman_greene, edelman_greene_insert, extract_vars
 
 ################################################################################
 # Export (more exports are in the source files)
@@ -74,7 +74,7 @@ export
 
 	# re-exported from SemistandardTableaux
 	Tableau, ssyt, ssyt_iterator, schur_poly, rsk, rsk_insert,
-	edelman_greene, edelman_greene_insert
+	edelman_greene, edelman_greene_insert, extract_vars
 
 
 
