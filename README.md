@@ -138,7 +138,7 @@ julia> R = xy_ring(3,3)[1]
 julia> lrc( u,v,w, 3, R )
 y1 - y3
 ```
-The SchubertPolynomials package requires [BumplessPipeDreams](https://github.com/pseudoeffective/BumplessPipeDreams.jl).
+The SchubertPolynomials package requires the unregistered packages [BumplessPipeDreams](https://github.com/pseudoeffective/BumplessPipeDreams.jl) and [SemistandardTableaux](https://github.com/pseudoeffective/SemistandardTableaux.jl).  These are declared in the `[sources]` table of `Project.toml`, so they are fetched automatically from their git repositories when you instantiate the package (Julia 1.11 or later).
 
 
 *Thanks to [Anders Buch](https://sites.math.rutgers.edu/~asbuch/) for convincing me to try out Julia.  Some of the functions in this package are based on his Maple code for multiplying Schubert polynomials.*
