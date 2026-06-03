@@ -43,7 +43,7 @@ julia> mult_2schub( [2,3,1], [3,1,2], 4; ring=R, double=true )
 ```
 """
 function mult_2schub( uu::Vector{Int}, vv::Vector{Int}, rnk::Int=maximum([length(uu),length(vv)]);
-                      double::Bool=false, ring::MPolyRing=schub_ring(rnk-1, rnk-1) )
+                      double::Bool=false, ring::MPolyRing=schub_ring(rnk, rnk) )
 
   len(uu)>len(vv) && return mult_2schub( vv, uu, rnk; double=double, ring=ring )
 
@@ -57,7 +57,7 @@ end
 
 # get the schubert structure constant, default non-equivariant
 function lrc( uu::Vector{Int}, vv::Vector{Int}, ww::Vector{Int}, rnk::Int=maximum([length(uu),length(vv),length(ww)]);
-              double::Bool=false, ring::MPolyRing=schub_ring(rnk-1, rnk-1) )
+              double::Bool=false, ring::MPolyRing=schub_ring(rnk, rnk) )
 
   ss = mult_2schub( uu, vv, rnk; double=double, ring=ring )
 
@@ -69,7 +69,7 @@ end
 
 # multiply a polynomial by a schubert sum, default non-equivariant
 function mult_schub(f::Union{Int,ZZMPolyRingElem}, ss::SchubertSum, rnk::Int=maximum( length.(ss.schubs) );
-                    double::Bool=false, ring::MPolyRing=schub_ring(rnk-1, rnk-1) )
+                    double::Bool=false, ring::MPolyRing=schub_ring(rnk, rnk) )
 
   i = maxvar(f)
   cfs = copy(ss.coeffs)
@@ -99,7 +99,7 @@ end
 
 # to multiply by a single w, default non-equivariant
 function mult_schub(f::Union{Int,ZZMPolyRingElem}, w::Vector{Int}, rnk::Int=length(w);
-                    double::Bool=false, ring::MPolyRing=schub_ring(rnk-1, rnk-1) )
+                    double::Bool=false, ring::MPolyRing=schub_ring(rnk, rnk) )
   ss = SchubertSum(w)
   return mult_schub(f,ss,rnk; double=double, ring=ring)
 end

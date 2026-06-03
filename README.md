@@ -23,17 +23,20 @@ The package provides several methods for computing (double) Schubert and Grothen
 ```julia-repl
 julia> w = [1,3,4,2];
 
-# set the ambient ring, this one just in three x variables
-julia> Rx = xy_ring(3)[1];
-
-julia> sp = schub_poly(w,Rx)
+julia> sp = schub_poly(w)
 x1*x2 + x1*x3 + x2*x3
 
-# for the double Schubert polynomial, change the ring to also include three y variables
-julia> Rxy = xy_ring(3,3)[1];
-
-julia> sp = schub_poly(w,Rxy)
+# for the double Schubert polynomial, specify with the keyword `double`:
+julia> sp2 = schub_poly(w,double=true)
 x1*x2 + x1*x3 + x1*y1 + x1*y2 + x2*x3 + x2*y1 + x2*y2 + x3*y1 + x3*y2 + y1^2 + y1*y2 + y2^2
+
+# you can constrain variables by changing the ambient ring:
+julia> R = schub_ring(2,1)
+Multivariate polynomial ring in 3 variables x1, x2, y1
+  over integer ring
+
+julia> sp3 = schub_poly(w,double=true, ring=R)
+x1*x2 + x1*y1 + x2*y1 + y1^2
 ```
 
 There is a function for quickly counting the terms of a Schubert polynomial:
@@ -46,10 +49,8 @@ julia> nschub(w)
 
 One can compute back stable Schubert polynomials, in the "dominant" basis `s[lambda]`, indexed by partitions:
 ```julia
-julia> R = xy_ring(4,4)[1];
-
-julia> back_schub_poly( [1,3,4,2], R )
-(x2*x3 + x2*y2 + x3*y2 + y2^2)*ss[] + ss[1, 1] + (x3 + y2)*ss[1]
+julia> back_schub_poly( [1,3,4,2], double=true )
+(x2*x3 + x2*y2 + x3*y2 + y2^2)*ss[] + (x3 + y2)*ss[1] + ss[1, 1]
 ```
 For more info, see the help files:
 ```julia
@@ -61,63 +62,40 @@ julia> ?back_schub_poly
 ```
 
 
-
-
-There are also functions for generating Young tableaux and computing (double,flagged) Schur polynomials.
-```julia
-julia> la = [2,1]; ff=2;
-
-julia> ssyt( la, ff )
-2-element Vector{Tableau}:
- 
-1 1 
-2 
-
- 
-1 2 
-2 
-
-# define a polynomial ring in five x variables and no y variables
-julia> R = xy_ring(5)[1];
-
-julia> sp = schur_poly( la, ff, R )
-x1^2*x2+x1*x2^2
-
-# the argument ff can be a vector of integers, for a flagged Schur polynomial:
-julia> sp = schur_poly( la, [2,3], R)
-x1^2*x2 + x1^2*x3 + x1*x2^2 + x1*x2*x3 + x2^2*x3
-
-# use the keyword argument `mu` for a skew Schur polynomial:
-julia> ssp = schur_poly( la, [2,3], R, mu=[1] )
-x1^2 + 2*x1*x2 + x1*x3 + x2^2 + x2*x3
-
-# changing the ambient ring to one with y variables produces a double Schur polynomial
-julia> R = xy_ring(5,5)[1];
-
-julia> sp2 = schur_poly( la, 2, R )
-x1^2*x2 + x1^2*y1 + x1*x2^2 + 2*x1*x2*y1 + x1*x2*y2 + x1*x2*y3 + x1*y1^2 + x1*y1*y2 + x1*y1*y3 + x2^2*y1 + x2*y1^2 + x2*y1*y2 + x2*y1*y3 + y1^2*y2 + y1^2*y3
-```
-
 There are some functions for multiplying Schubert classes.  For example, to multiply inside $Fl(3)$,
 ```julia-repl
 julia> mult_2schub( [2,1],[1,3,2],3 )
 S[3, 1, 2] + S[2, 3, 1]
 ```
 
-To multiply equivariant classes, specify a ring with enough y variables.
+To multiply equivariant classes, use the `double` keyword.
 ```julia-repl
-julia> R,x,y = xy_ring(3,3);
-
-julia> mult_2schub( [2,3,1], [3,1,2], 4, R )
+julia> mult_2schub( [2,3,1], [3,1,2], 4, double=true )
 (y1 - y3)*S[3, 2, 1] + S[4, 2, 1, 3]
 ```
 
 You can also expand a polynomial in the Schubert basis.
 ```julia-repl
-julia> f = evaluate( schub_poly([2,3,1],R), [y[1],y[2],y[3]],[-x[3],-x[2],-x[1]] )
+julia> R = schub_ring(3,3)
+Multivariate polynomial ring in 6 variables x1, x2, x3, y1, ..., y3
+  over integer ring
+
+julia> x = extract_vars(R,varname=:x)
+3-element Vector{ZZMPolyRingElem}:
+ x1
+ x2
+ x3
+
+julia> y = extract_vars(R,varname=:y)
+3-element Vector{ZZMPolyRingElem}:
+ y1
+ y2
+ y3
+
+julia> f = evaluate( schub_poly([2,3,1],double=true,ring=R), [y[1],y[2],y[3]],[-x[3],-x[2],-x[1]] )
 x1*x2 - x1*x3 - x2*x3 + x3^2
 
-julia> ss = expand_schub(f,3,R)
+julia> ss = expand_schub(f,3,double=true,ring=R)
 (y1*y2 - y1*y3 - y2*y3 + y3^2)*S[1] - (2*y1 - y2 - y3)*S[1, 3, 2] + 3*S[2, 3, 1]
 ```
 
@@ -134,8 +112,8 @@ The default is non-equivariant.  To get equivariant coefficients, specify the ri
 julia> w = [3,2,1];
 julia> lrc( u,v,w )
 0
-julia> R = xy_ring(3,3)[1]
-julia> lrc( u,v,w, 3, R )
+
+julia> lrc( u,v,w, 3, double=true )
 y1 - y3
 ```
 The SchubertPolynomials package requires the unregistered packages [BumplessPipeDreams](https://github.com/pseudoeffective/BumplessPipeDreams.jl) and [SemistandardTableaux](https://github.com/pseudoeffective/SemistandardTableaux.jl).  These are declared in the `[sources]` table of `Project.toml`, so they are fetched automatically from their git repositories when you instantiate the package (Julia 1.11 or later).
