@@ -300,7 +300,7 @@ end
 
 
 
-function schub_drifts( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1] )
+function schub_drifts( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-1,1), max(length(w)-1,1) )[1]; double::Bool=false )
 # compute schubert pol by drift class formula
 
   fbpds = flat_bpds(w)
@@ -309,7 +309,7 @@ function schub_drifts( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-
 
   for b in fbpds
     b=markconfig(b)
-    pol = pol+dc2sd(b,R)
+    pol = pol+dc2sd(b,R; double=double)
   end
 
   return pol
@@ -317,7 +317,7 @@ function schub_drifts( w::Vector{Int}, R::DoublePolyRing=xy_ring( max(length(w)-
 end
 
 
-function dc2sd( dc::Drift, R::DoublePolyRing=xy_ring( size(dc)[1], size(dc)[2] )[1]  )
+function dc2sd( dc::Drift, R::DoublePolyRing=xy_ring( size(dc)[1], size(dc)[2] )[1]; double::Bool=false  )
 # drift configuration to s-polynomial
 # must take marked configuration as input
 
@@ -327,7 +327,7 @@ function dc2sd( dc::Drift, R::DoublePolyRing=xy_ring( size(dc)[1], size(dc)[2] )
     for i=maximum([1,k-m]):minimum([n,k-1])
       if isa( dc.m[i,k-i], Tuple ) && dc.m[i,k-i][2]
         (dc1,dc2)=drift_split( dc, i, k-i )
-        return ( dc2sd( dc1, R ) + dc2sd( dc2, R ) )
+        return ( dc2sd( dc1, R; double=double ) + dc2sd( dc2, R; double=double ) )
       end
     end
   end
@@ -337,7 +337,7 @@ function dc2sd( dc::Drift, R::DoublePolyRing=xy_ring( size(dc)[1], size(dc)[2] )
   tcomps = tableau_components(dc)
 
   for tt in tcomps
-    sd = sd*schur_poly( tt[1], tt[2], R; mu=tt[3], xoffset=tt[4][1], yoffset=tt[4][2], rowmin=true )
+    sd = sd*schur_poly( tt[1], tt[2], R; double=double, mu=tt[3], xoffset=tt[4][1], yoffset=tt[4][2], rowmin=true )
   end
 
   return sd
