@@ -61,6 +61,8 @@ function schub_poly(w::Vector{Int}; double::Bool=false,
   double && isempty(extract_vars(ring; varname=:y)) && throw(ArgumentError("double=true requires a ring with y-variables; got a y-free ring"))
 
   w=trimw(w)
+  length(w)==0 && return(ring(1))
+
   ws = cutw(w)
 
   if length(ws)>1
@@ -126,6 +128,10 @@ function groth_poly(w::Vector{Int}; double::Bool=false,
                     method="dd" )
 
   double && isempty(extract_vars(ring; varname=:y)) && throw(ArgumentError("double=true requires a ring with y-variables; got a y-free ring"))
+
+  w=trimw(w)
+  length(w)==0 && return(ring(1))
+
 
   if method=="dd"
     return groth_dd(w,ring; double=double)
@@ -582,6 +588,9 @@ end
 
 function schub_bpd( w::Vector{Int}, R::MPolyRing=schub_ring( max(length(w)-1,1), max(length(w)-1,1) ); double::Bool=false  )
 # compute schubert pol by bpd formula
+  w = trimw(w)
+  length(w)==0 && return(R(1))
+
   bpds=all_bpds(w)
 
   pol=R(0)
@@ -686,12 +695,9 @@ function schub_dd( w::Vector{Int}, R::MPolyRing=schub_ring( max(length(w)-1,1), 
 # compute schubert pol by divided differences
 
   w=trimw(w)
-
   n=length(w)
 
-  if n==0
-    return(R(1))
-  end
+  n==0 && return(R(1))
 
   if length(extract_vars(R; varname=:x))<n-1
     throw(ArgumentError("Not enough x variables for this method"))
@@ -702,9 +708,7 @@ function schub_dd( w::Vector{Int}, R::MPolyRing=schub_ring( max(length(w)-1,1), 
     i=i-1
   end
 
-  if i==0
-    return sp0( n, R; double=double )
-  end
+  i==0 && return sp0( n, R; double=double )
 
   w = vcat( w[1:i-1], w[i+1], w[i], w[i+2:n] )
 
@@ -718,6 +722,9 @@ end
 
 function groth_bpd( w::Vector{Int}, R::MPolyRing=schub_ring( max(length(w)-1,1), max(length(w)-1,1) ); double::Bool=false  )
 # compute grothendieck pol by bpd formula
+  w=trimw(w)
+  length(w)==0 && return(R(1))
+
   bpds=all_Kbpds(w)
 
   pol=R(0)
@@ -734,6 +741,7 @@ end
 @memoize function groth_dd( w::Vector{Int}, R::MPolyRing=schub_ring( max(length(w)-1,1), max(length(w)-1,1) ); double::Bool=false )
 # compute grothendieck pol by divided differences
 
+  w=trimw(w)
   n=length(w)
   while n>0 && w[n]==n
     pop!(w)
